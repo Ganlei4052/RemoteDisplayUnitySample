@@ -1,0 +1,6 @@
+.DS_Store
+/Library
+*.unityproj
+*.csproj
+*.sln
+*.userprefs
