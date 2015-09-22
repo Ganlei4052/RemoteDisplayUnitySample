@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">UnityPlugin</string>
+    <string name="unknown_device">Unknown device</string>
+
+    <!-- Errors sent back to Unity. -->
+    <string name="error_device_not_supported">Device not supported.</string>
+    <string name="error_google_play_services_update_required">Google Play Services out of date.</string>
+</resources>
