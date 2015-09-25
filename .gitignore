@@ -4,3 +4,5 @@
 *.csproj
 *.sln
 *.userprefs
+/Temp
+*.apk
