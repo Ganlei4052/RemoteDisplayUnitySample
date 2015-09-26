@@ -3025,8 +3025,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf5e84904483642e895005e2d21a14be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  joystick: {fileID: 2800000, guid: 1f30aa3e9aa504bca93a2161a8c130f6, type: 3}
-  ring: {fileID: 2800000, guid: 492b5b626fb944fbd81633027cb7d7d9, type: 3}
+  joystickTexture: {fileID: 2800000, guid: 1f30aa3e9aa504bca93a2161a8c130f6, type: 3}
+  ringTexture: {fileID: 2800000, guid: 492b5b626fb944fbd81633027cb7d7d9, type: 3}
   horizontalAxisName: Mouse X
   verticalAxisName: Mouse Y
   xSensitivity: 1
@@ -4100,8 +4100,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf5e84904483642e895005e2d21a14be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  joystick: {fileID: 2800000, guid: e0ef3483af3e14d0e9cd99e0ed98d6e3, type: 3}
-  ring: {fileID: 2800000, guid: 492b5b626fb944fbd81633027cb7d7d9, type: 3}
+  joystickTexture: {fileID: 2800000, guid: e0ef3483af3e14d0e9cd99e0ed98d6e3, type: 3}
+  ringTexture: {fileID: 2800000, guid: 492b5b626fb944fbd81633027cb7d7d9, type: 3}
   horizontalAxisName: Horizontal
   verticalAxisName: Vertical
   xSensitivity: 1

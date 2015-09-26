@@ -15,12 +15,12 @@ namespace UnityStandardAssets.CrossPlatformInput
     /**
      * Joystick image.
      */
-    public Texture joystick;
+    public Texture joystickTexture;
 
     /**
      * Ring image.
      */
-    public Texture ring;
+    public Texture ringTexture;
 
     /**
      * The name given to the horizontal axis for the cross platform input.
@@ -33,12 +33,12 @@ namespace UnityStandardAssets.CrossPlatformInput
     public string verticalAxisName = "Vertical";
 
     /**
-     * X sensitivity.
+     * X sensitivity in pixels.
      */
     public float xSensitivity = 1f;
 
     /**
-     * Y sensitivity.
+     * Y sensitivity in pixels.
      */
     public float ySensitivity = 1f;
 
@@ -55,7 +55,7 @@ namespace UnityStandardAssets.CrossPlatformInput
     /**
      * Touch dragging state.
      */
-    bool dragging;
+    bool isDragging;
 
     /**
      * Touch event id.
@@ -65,17 +65,17 @@ namespace UnityStandardAssets.CrossPlatformInput
     /**
      * Current touch position.
      */
-    Vector2 currentPos = new Vector2 (0, 0);
+    Vector2 currentPos = new Vector2(0, 0);
 
     /**
      * Touch down position.
      */
-    Vector2 downPos = new Vector2 (0, 0);
+    Vector2 downPos = new Vector2(0, 0);
 
     /**
      * Diff between down and current touch positions.
      */
-    Vector2 currentToDownPos = new Vector2 (0, 0);
+    Vector2 currentToDownPos = new Vector2(0, 0);
 
     /**
      * Precalculated power value for ring boundary distance.
@@ -83,12 +83,12 @@ namespace UnityStandardAssets.CrossPlatformInput
     float pow;
 
     /**
-     * Radius of the joystick image.
+     * Radius of the joystick image in pixels.
      */
     float joystickRadius;
 
     /**
-     * Radius of the ring image.
+     * Radius of the ring image in pixels.
      */
     float ringRadius;
 
@@ -146,9 +146,10 @@ namespace UnityStandardAssets.CrossPlatformInput
      * Handle mouse down event.
      */
     public void OnPointerDown(PointerEventData data) {
-      dragging = true;
+      isDragging = true;
       touchId = data.pointerId;
       #if !UNITY_EDITOR
+      // Set center position of the ring as the touch position.
       center = data.position;
       #endif
       downPos = data.position;
@@ -158,7 +159,7 @@ namespace UnityStandardAssets.CrossPlatformInput
      * Update handler.
      */
     void Update() {
-      if (!dragging) {
+      if (!isDragging) {
         return;
       }
       if (Input.touchCount >= touchId + 1 && touchId != -1) {
@@ -186,7 +187,7 @@ namespace UnityStandardAssets.CrossPlatformInput
      * Handle mouse up event.
      */
     public void OnPointerUp(PointerEventData data) {
-      dragging = false;
+      isDragging = false;
       touchId = -1;
       UpdateVirtualAxes (Vector3.zero);
     }
@@ -206,13 +207,13 @@ namespace UnityStandardAssets.CrossPlatformInput
      * Update the GUI. Draw the joystick image within the ring image boundary.
      */
     void OnGUI() {
-      if (!dragging) {
+      if (!isDragging) {
         return;
       }
 
       // Draw the outer ring.
       GUI.DrawTexture (new Rect (downPos.x - ringRadius, Screen.height - downPos.y - ringRadius,
-                                 ringRadius * 2, ringRadius * 2), ring, ScaleMode.ScaleToFit, true);
+                                 ringRadius * 2, ringRadius * 2), ringTexture, ScaleMode.ScaleToFit, true);
 
       // Limit the joystick to inside the ring.
       currentToDownPos = downPos - currentPos;
@@ -222,7 +223,7 @@ namespace UnityStandardAssets.CrossPlatformInput
 
       // Draw the joystick.
       GUI.DrawTexture (new Rect (currentPos.x - joystickRadius, Screen.height - currentPos.y -
-                                 joystickRadius, joystickRadius * 2, joystickRadius * 2), joystick,
+                                 joystickRadius, joystickRadius * 2, joystickRadius * 2), joystickTexture,
                                  ScaleMode.ScaleToFit, true);
     }
   }
