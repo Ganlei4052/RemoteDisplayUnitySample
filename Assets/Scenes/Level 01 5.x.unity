@@ -803,7 +803,7 @@ GameObject:
   - 92: {fileID: 306932998}
   - 81: {fileID: 306932997}
   - 114: {fileID: 306933001}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Remote Camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -827,7 +827,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: .300000012
-  far clip plane: 1000
+  far clip plane: 50
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -870,8 +870,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 306932995}
-  m_LocalRotation: {x: .707106829, y: 0, z: 0, w: .707106709}
-  m_LocalPosition: {x: 0, y: 15, z: 0}
+  m_LocalRotation: {x: 0, y: .382683277, z: 0, w: -.923879623}
+  m_LocalPosition: {x: 0, y: 20, z: 20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -884,11 +884,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 306932995}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7bced140059b694e91f0e48210059c7, type: 3}
+  m_Script: {fileID: 11500000, guid: 7155c226de1914793905d01b27b9d752, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 2023876510}
-  smoothing: 5
+  displayManager: {fileID: 1942989638}
+  RemoteDisplayCamera: {fileID: 306932996}
+  MainCamera: {fileID: 1851598981}
 --- !u!1 &325982112
 GameObject:
   m_ObjectHideFlags: 0
@@ -2452,7 +2453,7 @@ Canvas:
   m_GameObject: {fileID: 1139190131}
   m_Enabled: 1
   serializedVersion: 2
-  m_RenderMode: 0
+  m_RenderMode: 1
   m_Camera: {fileID: 0}
   m_PlaneDistance: 100
   m_PixelPerfect: 1
@@ -3029,8 +3030,8 @@ MonoBehaviour:
   ringTexture: {fileID: 2800000, guid: 492b5b626fb944fbd81633027cb7d7d9, type: 3}
   horizontalAxisName: Mouse X
   verticalAxisName: Mouse Y
-  xSensitivity: 1
-  ySensitivity: 1
+  xSensitivity: .5
+  ySensitivity: .5
 --- !u!114 &1502360364
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4104,8 +4105,8 @@ MonoBehaviour:
   ringTexture: {fileID: 2800000, guid: 492b5b626fb944fbd81633027cb7d7d9, type: 3}
   horizontalAxisName: Horizontal
   verticalAxisName: Vertical
-  xSensitivity: 1
-  ySensitivity: 1
+  xSensitivity: .5
+  ySensitivity: .5
 --- !u!114 &2025002645
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -78,11 +78,6 @@ namespace UnityStandardAssets.CrossPlatformInput
     Vector2 currentToDownPos = new Vector2(0, 0);
 
     /**
-     * Precalculated power value for ring boundary distance.
-     */
-    float pow;
-
-    /**
      * Radius of the joystick image in pixels.
      */
     float joystickRadius;
@@ -116,21 +111,20 @@ namespace UnityStandardAssets.CrossPlatformInput
     void OnEnable() {
       CreateVirtualAxes ();
       #if !UNITY_EDITOR
-      image = GetComponent<Image> ();
+      image = GetComponent<Image>();
       center = image.transform.position;
       #endif
       // Pre-calculate some values to size the graphics.
       joystickRadius = Screen.height / 8;
-      ringRadius = joystickRadius * 2;
-      pow = Mathf.Pow (ringRadius / 2, 2);
+      ringRadius = joystickRadius * 1.75f;
     }
 
     /**
      * Create the virtual axes for the joystick.
      */
     void CreateVirtualAxes() {
-      horizontalVirtualAxis = new CrossPlatformInputManager.VirtualAxis (horizontalAxisName);
-      verticalVirtualAxis = new CrossPlatformInputManager.VirtualAxis (verticalAxisName);
+      horizontalVirtualAxis = new CrossPlatformInputManager.VirtualAxis(horizontalAxisName);
+      verticalVirtualAxis = new CrossPlatformInputManager.VirtualAxis(verticalAxisName);
     }
 
     /**
@@ -138,8 +132,8 @@ namespace UnityStandardAssets.CrossPlatformInput
      */
     void UpdateVirtualAxes(Vector3 value) {
       value = value.normalized;
-      horizontalVirtualAxis.Update (value.x);
-      verticalVirtualAxis.Update (value.y);
+      horizontalVirtualAxis.Update(value.x);
+      verticalVirtualAxis.Update(value.y);
     }
 
     /**
@@ -164,9 +158,9 @@ namespace UnityStandardAssets.CrossPlatformInput
       }
       if (Input.touchCount >= touchId + 1 && touchId != -1) {
         #if !UNITY_EDITOR
-        Vector2 pointerDelta = new Vector2 (Input.touches [touchId].position.x - center.x,
-                                            Input.touches [touchId].position.y - center.y)
-                                            .normalized;
+        Vector2 pointerDelta = new Vector2(Input.touches [touchId].position.x - center.x,
+                                             Input.touches [touchId].position.y - center.y)
+                                             .normalized;
         pointerDelta.x *= xSensitivity;
         pointerDelta.y *= ySensitivity;
         currentPos.x = Input.touches [touchId].position.x;
@@ -175,11 +169,11 @@ namespace UnityStandardAssets.CrossPlatformInput
         Vector2 pointerDelta;
         pointerDelta.x = Input.mousePosition.x - previousMouse.x;
         pointerDelta.y = Input.mousePosition.y - previousMouse.y;
-        previousMouse = new Vector3 (Input.mousePosition.x, Input.mousePosition.y, 0f);
+        previousMouse = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f);
         currentPos.x = Input.mousePosition.x;
         currentPos.y = Input.mousePosition.y;
         #endif
-        UpdateVirtualAxes (new Vector3 (pointerDelta.x, pointerDelta.y, 0));
+        UpdateVirtualAxes(new Vector3(pointerDelta.x, pointerDelta.y, 0));
       }
     }
 
@@ -189,18 +183,18 @@ namespace UnityStandardAssets.CrossPlatformInput
     public void OnPointerUp(PointerEventData data) {
       isDragging = false;
       touchId = -1;
-      UpdateVirtualAxes (Vector3.zero);
+      UpdateVirtualAxes(Vector3.zero);
     }
 
     /**
      * Disable the game object.
      */
     void OnDisable() {
-      if (CrossPlatformInputManager.VirtualAxisReference (horizontalAxisName) != null)
-        CrossPlatformInputManager.UnRegisterVirtualAxis (horizontalAxisName);
+      if (CrossPlatformInputManager.VirtualAxisReference(horizontalAxisName) != null)
+        CrossPlatformInputManager.UnRegisterVirtualAxis(horizontalAxisName);
 
-      if (CrossPlatformInputManager.VirtualAxisReference (verticalAxisName) != null)
-        CrossPlatformInputManager.UnRegisterVirtualAxis (verticalAxisName);
+      if (CrossPlatformInputManager.VirtualAxisReference(verticalAxisName) != null)
+        CrossPlatformInputManager.UnRegisterVirtualAxis(verticalAxisName);
     }
 
     /**
@@ -212,17 +206,15 @@ namespace UnityStandardAssets.CrossPlatformInput
       }
 
       // Draw the outer ring.
-      GUI.DrawTexture (new Rect (downPos.x - ringRadius, Screen.height - downPos.y - ringRadius,
+      GUI.DrawTexture(new Rect(downPos.x - ringRadius, Screen.height - downPos.y - ringRadius,
                                  ringRadius * 2, ringRadius * 2), ringTexture, ScaleMode.ScaleToFit, true);
 
       // Limit the joystick to inside the ring.
       currentToDownPos = downPos - currentPos;
-      if (Mathf.Round (currentToDownPos.sqrMagnitude) >= pow) {
-        currentPos = downPos + currentToDownPos.normalized * ringRadius / 2;
-      }
+      currentPos = downPos + Vector2.ClampMagnitude(currentToDownPos, ringRadius-joystickRadius);
 
       // Draw the joystick.
-      GUI.DrawTexture (new Rect (currentPos.x - joystickRadius, Screen.height - currentPos.y -
+      GUI.DrawTexture(new Rect(currentPos.x - joystickRadius, Screen.height - currentPos.y -
                                  joystickRadius, joystickRadius * 2, joystickRadius * 2), joystickTexture,
                                  ScaleMode.ScaleToFit, true);
     }
