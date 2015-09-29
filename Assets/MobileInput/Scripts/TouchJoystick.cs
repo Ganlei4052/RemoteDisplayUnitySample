@@ -106,6 +106,20 @@ namespace UnityStandardAssets.CrossPlatformInput
     #endif
 
     /**
+     * Desired 1080p screen resolution.
+     */
+    private int screenResolutionWidth = 1920;
+    private int screenResolutionHeight = 1080;
+
+    /**
+     * Enable the game object.
+     */
+    void Start() {
+      // Set screen resolution.
+      Screen.SetResolution(screenResolutionWidth, screenResolutionHeight, true);
+    }
+
+    /**
      * Enable the game object.
      */
     void OnEnable() {
@@ -115,7 +129,7 @@ namespace UnityStandardAssets.CrossPlatformInput
       center = image.transform.position;
       #endif
       // Pre-calculate some values to size the graphics.
-      joystickRadius = Screen.height / 8;
+      joystickRadius = screenResolutionHeight / 8;
       ringRadius = joystickRadius * 1.75f;
     }
 
