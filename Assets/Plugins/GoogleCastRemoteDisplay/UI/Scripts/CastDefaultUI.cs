@@ -30,6 +30,8 @@ public delegate void UICallback();
  */
 public class CastDefaultUI : MonoBehaviour {
 
+  private const string FIRST_TIME_CAST_SHOWN = "firstTimeCastShown";
+
   /**
    * Container for the start/stop casting button.
    */
@@ -44,6 +46,11 @@ public class CastDefaultUI : MonoBehaviour {
    * Dialog for displaying errors from the Remote Display Manager.
    */
   public CastErrorDialog errorDialog;
+
+  /**
+   * Dialog for displaying the "first time cast" information.
+   */
+  public FirstTimeCastDialog firstTimeCastDialog;
 
   /**
    * Outlet for the sprites needed by various Cast UI components.
@@ -83,8 +90,8 @@ public class CastDefaultUI : MonoBehaviour {
       errorDialog.okayButtonTappedCallback = OnConfirmErrorDialog;
 
       castButtonFrame.SetSprites(castUISprites);
-      castListDialog.Hide();
-      errorDialog.gameObject.SetActive(false);
+      HideAll();
+      castButtonFrame.Show();
     }
   }
 
@@ -102,10 +109,26 @@ public class CastDefaultUI : MonoBehaviour {
   }
 
   /**
+   * Resets the UI to hidden, so the proper elements can be shown.
+   */
+  private void HideAll() {
+    castButtonFrame.Hide();
+    castListDialog.Hide();
+    errorDialog.gameObject.SetActive(false);
+    firstTimeCastDialog.Hide();
+  }
+
+  /**
    * When the list of devices updates, update the list. Called when the list of
    * devices updates.
    */
   public void OnCastDevicesUpdated(CastRemoteDisplayManager manager) {
+    bool firstTimeCastShown = PlayerPrefs.GetInt(FIRST_TIME_CAST_SHOWN) == 0 ? false : true;
+    if (!firstTimeCastShown) {
+      HideAll();
+      firstTimeCastDialog.Show();
+      PlayerPrefs.SetInt(FIRST_TIME_CAST_SHOWN, 1);
+    }
     castListDialog.PopulateList(manager);
   }
 
@@ -114,7 +137,7 @@ public class CastDefaultUI : MonoBehaviour {
    */
   public void OnRemoteDisplaySessionStart(CastRemoteDisplayManager manager) {
     isCasting = true;
-    castListDialog.Hide();
+    HideAll();
     castButtonFrame.ShowCasting();
   }
 
@@ -131,17 +154,14 @@ public class CastDefaultUI : MonoBehaviour {
    */
   public void OnRemoteDisplayError(CastRemoteDisplayManager manager,
       CastErrorCode errorCode, string errorString) {
-
-    castButtonFrame.Hide();
-    errorDialog.gameObject.SetActive(true);
-    errorDialog.statusLabel.text = errorString;
+    errorDialog.SetError(errorCode, errorString);
   }
 
   /**
    * Callback when the user taps close button.
    */
   public void OnCloseCastList() {
-    castListDialog.Hide();
+    HideAll();
     castButtonFrame.ShowNotCasting();
   }
 
@@ -152,8 +172,12 @@ public class CastDefaultUI : MonoBehaviour {
     if (isCasting) {
       displayManager.StopRemoteDisplaySession();
     } else {
-      castButtonFrame.Hide();
-      castListDialog.Show();
+      HideAll();
+      if (errorDialog.ErrorCode == CastErrorCode.NoError) {
+        castListDialog.Show();
+      } else {
+        errorDialog.gameObject.SetActive(true);
+      }
     }
   }
 
@@ -161,7 +185,15 @@ public class CastDefaultUI : MonoBehaviour {
    * Called when the error dialog is confirmed.
    */
   public void OnConfirmErrorDialog() {
+    HideAll();
     castButtonFrame.ShowNotCasting();
-    errorDialog.gameObject.SetActive(false);
+  }
+
+  /**
+   * Called when the first time dialog is confirmed.
+   */
+  public void OnConfirmFirstTimeDialog() {
+    HideAll();
+    castButtonFrame.ShowNotCasting();
   }
 }

@@ -67,7 +67,7 @@ public class CastRemoteDisplayUnityExtension : ICastRemoteDisplayExtension {
     extensionManager._callback_OnRemoteDisplaySessionStart(selectedDevice);
   }
 
-  public void SetRemoteDisplayTexture(RenderTexture texture) {
+  public void SetRemoteDisplayTexture(Texture texture) {
     remoteDisplayTexture = texture;
   }
 

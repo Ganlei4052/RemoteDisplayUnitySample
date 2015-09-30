@@ -91,7 +91,7 @@ public class CastRemoteDisplayiOSExtension : ICastRemoteDisplayExtension {
     }
   }
 
-  public void SetRemoteDisplayTexture(RenderTexture texture) {
+  public void SetRemoteDisplayTexture(Texture texture) {
     IntPtr texturePointer = texture.GetNativeTexturePtr();
     if (texturePointer == IntPtr.Zero) {
       Debug.LogError("Couldn't obtain native pointer for the remote display texture.");

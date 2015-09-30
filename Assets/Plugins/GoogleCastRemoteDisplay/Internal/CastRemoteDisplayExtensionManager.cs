@@ -2,7 +2,6 @@
 
 using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 public class CastRemoteDisplayExtensionManager : MonoBehaviour {
@@ -15,19 +14,20 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
   private CastEventHandler onRemoteDisplaySessionEndCallback;
   private CastErrorHandler onErrorCallback;
 
+  private bool isApplicationPaused = false;
+
   private List<CastDevice> castDevices = new List<CastDevice>();
   private ICastRemoteDisplayExtension castRemoteDisplayExtension = null;
 
-  private CastRemoteDisplayManager castRemoteDisplayManager = null;
+  // When Unity specifies a camera but no render texture, we must generate one and assign it.
+  //  When casting is complete, we must reclaim it - this bool tracks that possibility.
+  private bool renderTextureGenerated = false;
+
   public CastRemoteDisplayManager CastRemoteDisplayManager {
     get {
-      return castRemoteDisplayManager;
+      return CastRemoteDisplayManager.GetInstance();
     }
   }
-
-  // A render texture used in case we are using a camera and that camera doesn't have a target
-  // texture set. Not used in any other render mode.
-  private RenderTexture texture;
 
   /**
    * Sets the event handlers that should be invoked by this class.
@@ -48,9 +48,8 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
   void Awake() {
     // Do not initialize or perform checks yet, but if there is a remote display camera disable it
     // so that it doesn't become the main camera.
-    castRemoteDisplayManager = GetComponent<CastRemoteDisplayManager>();
-    if (castRemoteDisplayManager != null && castRemoteDisplayManager.RemoteDisplayCamera != null) {
-      castRemoteDisplayManager.RemoteDisplayCamera.enabled = false;
+    if (CastRemoteDisplayManager != null && CastRemoteDisplayManager.RemoteDisplayCamera != null) {
+      CastRemoteDisplayManager.RemoteDisplayCamera.enabled = false;
     }
   }
 
@@ -76,6 +75,14 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
     if (castRemoteDisplayExtension != null) {
       castRemoteDisplayExtension.Update();
     }
+  }
+
+  /**
+   * Unity callback for when the app gets paused/backgrounded, and resumed/foregrounded.
+   */
+  void OnApplicationPause(bool paused) {
+    isApplicationPaused = paused;
+    UpdateRemoteDisplayTexture();
   }
 
   /**
@@ -124,45 +131,61 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
   public void StopRemoteDisplaySession() {
     if (GetSelectedCastDeviceId() != null) {
       castRemoteDisplayExtension.StopRemoteDisplaySession();
+      if (renderTextureGenerated) {
+        CastRemoteDisplayManager.RemoteDisplayCamera.targetTexture = null;
+        renderTextureGenerated = false;
+      }
     }
   }
 
   /**
    * Notifies the static library that a new texture id should be used for remote display rendering.
+   * It will select the #RemoteDisplayTexture property of the #CastRemoteDisplayManager, if not set
+   * it will try to use the #RemoteDisplayCamera. If the application is paused and the
+   * #RemoteDisplayPausedTexture is set, it will be selected.
    */
-  public void UpdateRenderTexture() {
+  public void UpdateRemoteDisplayTexture() {
     if (castRemoteDisplayExtension == null) {
-      Debug.Log("Remote display is not activated. Can't update render texture or camera.");
+      Debug.Log("Remote display is not activated. Can't update remote display texture or camera.");
       return;
     }
 
-    RenderTexture renderTexture = null;
-    if (castRemoteDisplayManager.RemoteDisplayRenderTexture != null) {
-      // The user explicitly set a render texture to use.
-      renderTexture = castRemoteDisplayManager.RemoteDisplayRenderTexture;
-    } else if (castRemoteDisplayManager.RemoteDisplayCamera != null) {
-      // We are using a camera. If it has a target render texture set, use that.
-      castRemoteDisplayManager.RemoteDisplayCamera.enabled = true;
-      if (castRemoteDisplayManager.RemoteDisplayCamera.targetTexture == null) {
-        // Otherwise create our own.
-        if (texture != null) {
-          texture.DiscardContents();
+    Texture texture = null;
+    CastRemoteDisplayManager manager = CastRemoteDisplayManager;
+    renderTextureGenerated = false;
+
+    if (isApplicationPaused && manager.RemoteDisplayPausedTexture != null) {
+      // Application paused and we have a paused texture to display.
+      texture = manager.RemoteDisplayPausedTexture;
+    } else {
+      if (manager.RemoteDisplayTexture != null) {
+        // The user explicitly set a texture to use.
+        texture = manager.RemoteDisplayTexture;
+      } else if (manager.RemoteDisplayCamera != null) {
+        // We are using a camera. If it has a target render texture set, use that.
+        manager.RemoteDisplayCamera.enabled = true;
+        manager.RemoteDisplayCamera.gameObject.SetActive(true);
+        if (manager.RemoteDisplayCamera.targetTexture == null) {
+          // Otherwise create our own.
+          RenderTexture renderTexture = new RenderTexture(
+              (int) manager.Configuration.ResolutionDimensions.x,
+              (int) manager.Configuration.ResolutionDimensions.y,
+            24, RenderTextureFormat.ARGB32);
+          manager.RemoteDisplayCamera.targetTexture = renderTexture;
+          renderTextureGenerated = true;
         }
-        texture = new RenderTexture(
-          (int)castRemoteDisplayManager.Configuration.ResolutionDimensions.x,
-          (int)castRemoteDisplayManager.Configuration.ResolutionDimensions.y,
-          24, RenderTextureFormat.ARGB32);
-        texture.Create();
-        castRemoteDisplayManager.RemoteDisplayCamera.targetTexture = texture;
+        if (!manager.RemoteDisplayCamera.targetTexture.IsCreated()) {
+          manager.RemoteDisplayCamera.targetTexture.Create();
+        }
+        texture = manager.RemoteDisplayCamera.targetTexture;
       }
-      renderTexture = castRemoteDisplayManager.RemoteDisplayCamera.targetTexture;
     }
 
-    if (renderTexture == null) {
-      Debug.LogError("No render texture or camera set. Can't cast to remote display.");
+    if (texture == null) {
+      Debug.LogError("No texture or camera set. Can't cast to remote display.");
       return;
     }
-    castRemoteDisplayExtension.SetRemoteDisplayTexture(renderTexture);
+    castRemoteDisplayExtension.SetRemoteDisplayTexture(texture);
   }
 
   /**
@@ -170,39 +193,37 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
    */
   private void Activate() {
     Debug.Log("Activating Cast Remote Display.");
-
-    castRemoteDisplayManager = GetComponent<CastRemoteDisplayManager>();
-    if (castRemoteDisplayManager == null) {
+    if (CastRemoteDisplayManager == null) {
       Debug.LogError("FATAL: CastRemoteDisplayManager script not found.");
       return;
     }
 
-    if (castRemoteDisplayManager.CastAppId == null ||
-        castRemoteDisplayManager.CastAppId.Equals("")) {
+    if (CastRemoteDisplayManager.CastAppId == null ||
+        CastRemoteDisplayManager.CastAppId.Equals("")) {
       Debug.LogError("FATAL: CastRemoteDisplayManager needs a CastAppId");
       return;
     }
 
-    if (castRemoteDisplayManager.Configuration == null) {
+    if (CastRemoteDisplayManager.Configuration == null) {
       Debug.LogError("FATAL: CastRemoteDisplayManager has null configuration");
       return;
     }
 
-    if (castRemoteDisplayManager.RemoteAudioListener != null) {
-      castRemoteDisplayManager.RemoteAudioListener.setCastRemoteDisplayExtensionManager(this);
+    if (CastRemoteDisplayManager.RemoteAudioListener != null) {
+      CastRemoteDisplayManager.RemoteAudioListener.setCastRemoteDisplayExtensionManager(this);
     }
 
-    #if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
     castRemoteDisplayExtension = new CastRemoteDisplayAndroidExtension(this);
-    #elif UNITY_IOS && !UNITY_EDITOR
+#elif UNITY_IOS && !UNITY_EDITOR
     castRemoteDisplayExtension = new CastRemoteDisplayiOSExtension(this);
-    #elif UNITY_EDITOR
+#elif UNITY_EDITOR
     CastRemoteDisplaySimulator displaySimulator =
       UnityEngine.Object.FindObjectOfType<CastRemoteDisplaySimulator>();
     if (displaySimulator) {
       castRemoteDisplayExtension = new CastRemoteDisplayUnityExtension(this, displaySimulator);
     }
-    #endif
+#endif
 
     if (castRemoteDisplayExtension != null) {
       castRemoteDisplayExtension.Activate();
@@ -222,8 +243,8 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
       StopRemoteDisplaySession();
     }
 
-    if (castRemoteDisplayManager.RemoteDisplayCamera != null) {
-      castRemoteDisplayManager.RemoteDisplayCamera.enabled = false;
+    if (CastRemoteDisplayManager.RemoteDisplayCamera != null) {
+      CastRemoteDisplayManager.RemoteDisplayCamera.enabled = false;
     }
 
     if (castRemoteDisplayExtension != null) {
@@ -242,7 +263,7 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
       castRemoteDisplayExtension.OnRemoteDisplaySessionStart(deviceId);
     }
 
-    UpdateRenderTexture();
+    UpdateRemoteDisplayTexture();
 
     onRemoteDisplaySessionStartCallback();
   }

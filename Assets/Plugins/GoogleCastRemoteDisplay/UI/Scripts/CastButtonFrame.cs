@@ -34,7 +34,7 @@ public class CastButtonFrame : MonoBehaviour {
    */
   public void ShowCasting() {
     castButton.image.sprite = uiSprites.casting;
-    gameObject.SetActive(true);
+    Show();
   }
 
   /**
@@ -42,6 +42,13 @@ public class CastButtonFrame : MonoBehaviour {
    */
   public void ShowNotCasting() {
     castButton.image.sprite = uiSprites.notCasting;
+    Show();
+  }
+
+  /**
+   * Shows the cast button.
+   */
+  public void Show() {
     gameObject.SetActive(true);
   }
 

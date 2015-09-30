@@ -2,7 +2,6 @@
 
 using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 /**
@@ -211,7 +210,6 @@ public class CastRemoteDisplayConfiguration {
  * Entry point to the Google Cast Remote Display API for Unity. Add only one of these to your scene
  * as a top level game object.
  */
-[RequireComponent(typeof(CastRemoteDisplayExtensionManager))]
 public class CastRemoteDisplayManager : MonoBehaviour {
   /**
    * Fired when the list of available cast devices has been updated. Call #GetCastDevices on the
@@ -236,8 +234,17 @@ public class CastRemoteDisplayManager : MonoBehaviour {
    */
   public event Action<CastRemoteDisplayManager, CastErrorCode, string> remoteDisplayErrorEvent;
 
+
   /**
-   * Used to render graphics on the remote display.
+   * There should only be one DisplayManager in the scene at a time, this instance enforces that.
+   */
+  private static CastRemoteDisplayManager instance = null;
+  public static CastRemoteDisplayManager GetInstance() {
+    return instance;
+  }
+
+  /**
+   * Used to render graphics on the remote display. Only used if #RemoteDisplayTexture is not set.
    */
   [SerializeField]
   private Camera remoteDisplayCamera;
@@ -248,22 +255,36 @@ public class CastRemoteDisplayManager : MonoBehaviour {
     set {
       remoteDisplayCamera = value;
       if (extensionManager != null) {
-        extensionManager.UpdateRenderTexture();
+        extensionManager.UpdateRemoteDisplayTexture();
       }
     }
   }
 
   [SerializeField]
-  private RenderTexture remoteDisplayRenderTexture;
-  public RenderTexture RemoteDisplayRenderTexture {
+  private RenderTexture remoteDisplayTexture;
+  public RenderTexture RemoteDisplayTexture {
     get {
-      return remoteDisplayRenderTexture;
+      return remoteDisplayTexture;
     }
     set {
-      remoteDisplayRenderTexture = value;
+      remoteDisplayTexture = value;
       if (extensionManager != null) {
-        extensionManager.UpdateRenderTexture();
+        extensionManager.UpdateRemoteDisplayTexture();
       }
+    }
+  }
+
+  /**
+   * Used to render graphics on the remote display when the application is paused or backgrounded.
+   */
+  [SerializeField]
+  private Texture remoteDisplayPausedTexture;
+  public Texture RemoteDisplayPausedTexture {
+    get {
+      return remoteDisplayPausedTexture;
+    }
+    set {
+      remoteDisplayPausedTexture = value;
     }
   }
 
@@ -316,10 +337,18 @@ public class CastRemoteDisplayManager : MonoBehaviour {
   private CastRemoteDisplayExtensionManager extensionManager;
 
   private void Awake() {
-    extensionManager = GetComponent<CastRemoteDisplayExtensionManager>();
-    if (extensionManager == null) {
-      extensionManager = gameObject.AddComponent<CastRemoteDisplayExtensionManager>();
+    if (instance && instance != this) {
+      Debug.LogWarning("Second CastRemoteDisplayManager detected - destroying. Please make sure" +
+        "the appropriate configuration gets migrated to the singleton DisplayManager if this is " +
+        "intended.");
+      DestroyImmediate(gameObject);
+      return;
+    } else {
+      instance = this;
+      DontDestroyOnLoad(gameObject);
     }
+
+    extensionManager = gameObject.AddComponent<CastRemoteDisplayExtensionManager>();
     extensionManager.SetEventHandlers(fireCastDevicesUpdatedEvent,
         fireRemoteDisplaySessionStartEvent, fireRemoteDisplaySessionEndEvent,
         fireErrorEvent);

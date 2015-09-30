@@ -8,7 +8,6 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 434812}
-  - 114: {fileID: 11420338}
   - 114: {fileID: 11467948}
   m_Layer: 0
   m_Name: CastRemoteDisplayManager
@@ -29,17 +28,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
---- !u!114 &11420338
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 189424}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d8b0af6f23064cbabdbe45f526d0a93, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &11467948
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -55,8 +43,12 @@ MonoBehaviour:
   remoteDisplayRenderTexture: {fileID: 0}
   remoteAudioListener: {fileID: 0}
   castAppId: 
-  remoteDisplayWidth: 1280
-  remoteDisplayHeight: 720
+  configuration:
+    resolution: 720
+    frameRate: 60
+    targetDelay: 100
+    audioBitrate: 128000
+    videoBitrate: 3000000
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

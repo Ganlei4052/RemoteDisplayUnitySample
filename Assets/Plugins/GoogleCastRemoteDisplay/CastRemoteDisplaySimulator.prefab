@@ -39,7 +39,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1356010fdb6b43e2b57778ffa5df895, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  castDevices: []
+  simulateRemoteDisplay: 1
+  remoteDisplayRect:
+    serializedVersion: 2
+    x: .600000024
+    y: .600000024
+    width: .389999986
+    height: .389999986
+  castDevices:
+  - deviceId: virtaualCastDevice001
+    deviceName: VirtualCastDevice
+    status: Displaying backdrop
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

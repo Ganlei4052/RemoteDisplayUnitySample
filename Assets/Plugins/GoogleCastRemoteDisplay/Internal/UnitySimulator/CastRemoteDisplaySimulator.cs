@@ -27,6 +27,25 @@ public class CastRemoteDisplaySimulator : MonoBehaviour {
   }
 
   /**
+   * The Simulator is a singleton, because it works in parallel with the DisplayManager, which
+   * is also a singleton.
+   */
+  static private CastRemoteDisplaySimulator instance;
+
+  /**
+   * Enforces uniqueness of the DisplaySimulator.
+   */
+  void Awake() {
+    if (instance) {
+      Destroy(gameObject);
+      return;
+    } else {
+      instance = this;
+      DontDestroyOnLoad(gameObject);
+    }
+  }
+
+  /**
    * Ensures the devices get updated after a short amount of time.
    */
   public IEnumerator Start() {

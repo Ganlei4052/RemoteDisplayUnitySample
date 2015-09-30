@@ -20,9 +20,31 @@ public class DefaultCastUIController : MonoBehaviour {
   private CastDefaultUI defaultUI;
 
   /**
+   * Enforces the uniqueness of the DefaultCastUIController across scenes.
+   */
+  static private DefaultCastUIController instance;
+
+  /**
+   * If a default UI controller already exists, destroy the new one.
+   */
+  void Awake() {
+    if (instance) {
+      Destroy(gameObject);
+      return;
+    } else {
+      instance = this;
+      DontDestroyOnLoad(gameObject);
+    }
+  }
+
+  /**
    * Finds the display manager automatically.
    */
   void Start() {
+    if (instance != this) {
+      return;
+    }
+
     if (!displayManager) {
       displayManager = UnityEngine.Object.FindObjectOfType<CastRemoteDisplayManager>();
     }
@@ -51,6 +73,8 @@ public class DefaultCastUIController : MonoBehaviour {
    * When the UI is disabled, stop listening to the relevant events.
    */
   void OnDisable() {
-    defaultUI.Uninitialize(displayManager);
+    if (displayManager && defaultUI) {
+      defaultUI.Uninitialize(displayManager);
+    }
   }
 }

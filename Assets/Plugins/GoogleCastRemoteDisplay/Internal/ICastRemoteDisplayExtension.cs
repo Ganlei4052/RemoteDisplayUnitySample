@@ -24,7 +24,7 @@ public interface ICastRemoteDisplayExtension {
 
   void SelectCastDevice(string deviceId);
 
-  void SetRemoteDisplayTexture(RenderTexture texture);
+  void SetRemoteDisplayTexture(Texture texture);
 
   void StopRemoteDisplaySession();
 
