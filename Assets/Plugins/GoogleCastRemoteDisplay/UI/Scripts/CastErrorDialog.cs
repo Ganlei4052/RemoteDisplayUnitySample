@@ -23,21 +23,10 @@ public class CastErrorDialog : MonoBehaviour {
   public UICallback okayButtonTappedCallback;
 
   /**
-   * Stores the last error code thrown.
-   */
-  private CastErrorCode errorCode = CastErrorCode.NoError;
-  public CastErrorCode ErrorCode {
-    get {
-      return errorCode;
-    }
-  }
-
-  /**
    * When an error is thrown, set up the error dialog to display it when the Cast button is pressed.
    */
-  public void SetError(CastErrorCode code, string errorString) {
-    errorCode = code;
-    statusLabel.text = errorString;
+  public void SetError(CastError error) {
+    statusLabel.text = "Error " + error.errorCode + " - " + error.message;
   }
 
   /**

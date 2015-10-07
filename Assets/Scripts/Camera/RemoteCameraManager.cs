@@ -12,7 +12,7 @@ public class RemoteCameraManager : MonoBehaviour {
   /**
    * Reference to the display manager.
    */
-  private CastRemoteDisplayManager displayManager;
+  public CastRemoteDisplayManager displayManager;
 
   /**
    * Used to render graphics on the mobile display.
@@ -37,11 +37,25 @@ public class RemoteCameraManager : MonoBehaviour {
       Destroy(gameObject);
       return;
     }
-    displayManager.remoteDisplaySessionStartEvent += OnRemoteDisplaySessionStart;
-    displayManager.remoteDisplaySessionEndEvent += OnRemoteDisplaySessionEnd;
-    displayManager.remoteDisplayErrorEvent += OnRemoteDisplayError;
-    RemoteDisplayCamera.enabled = false;
+
+    displayManager.remoteDisplaySessionStartEvent.AddListener(OnRemoteDisplaySessionStart);
+    displayManager.remoteDisplaySessionEndEvent.AddListener(OnRemoteDisplaySessionEnd);
+    displayManager.remoteDisplayErrorEvent.AddListener(OnRemoteDisplayError);
+    if (displayManager.GetSelectedCastDeviceId() != null) {
+      RemoteDisplayCamera.enabled = true;
+      displayManager.RemoteDisplayCamera = MainCamera;
+    }
+
     MainCamera.enabled = true;
+  }
+
+  /**
+  * Stop listening to the CastRemoteDisplayManager events.
+  */
+  private void OnDestroy() {
+    displayManager.remoteDisplaySessionStartEvent.RemoveListener(OnRemoteDisplaySessionStart);
+    displayManager.remoteDisplaySessionEndEvent.RemoveListener(OnRemoteDisplaySessionEnd);
+    displayManager.remoteDisplayErrorEvent.RemoveListener(OnRemoteDisplayError);
   }
 
   /**
@@ -56,6 +70,7 @@ public class RemoteCameraManager : MonoBehaviour {
    * Cast session ended, so change the mobile device camera.
    */
   public void OnRemoteDisplaySessionEnd(CastRemoteDisplayManager manager) {
+    displayManager.RemoteDisplayCamera = null;
     RemoteDisplayCamera.enabled = false;
     MainCamera.enabled = true;
   }
@@ -63,8 +78,7 @@ public class RemoteCameraManager : MonoBehaviour {
   /**
    * Handles error messages from the Remote Display Manager.
    */
-  public void OnRemoteDisplayError(CastRemoteDisplayManager manager,
-      CastErrorCode errorCode, string errorString) {
+  public void OnRemoteDisplayError(CastRemoteDisplayManager manager) {
     RemoteDisplayCamera.enabled = false;
     MainCamera.enabled = true;
   }

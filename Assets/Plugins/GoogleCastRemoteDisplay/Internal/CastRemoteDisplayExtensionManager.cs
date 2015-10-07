@@ -6,22 +6,8 @@ using System.Collections.Generic;
 
 public class CastRemoteDisplayExtensionManager : MonoBehaviour {
 
-  // We need these in order to tell the CastRemoteDisplayManager to fire events for us.
+  // We need this in order to tell the CastRemoteDisplayManager to fire events for us.
   public delegate void CastEventHandler();
-  public delegate void CastErrorHandler(CastErrorCode errorCode, string errorString);
-  private CastEventHandler onCastDevicesUpdatedCallback;
-  private CastEventHandler onRemoteDisplaySessionStartCallback;
-  private CastEventHandler onRemoteDisplaySessionEndCallback;
-  private CastErrorHandler onErrorCallback;
-
-  private bool isApplicationPaused = false;
-
-  private List<CastDevice> castDevices = new List<CastDevice>();
-  private ICastRemoteDisplayExtension castRemoteDisplayExtension = null;
-
-  // When Unity specifies a camera but no render texture, we must generate one and assign it.
-  //  When casting is complete, we must reclaim it - this bool tracks that possibility.
-  private bool renderTextureGenerated = false;
 
   public CastRemoteDisplayManager CastRemoteDisplayManager {
     get {
@@ -29,13 +15,28 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
     }
   }
 
+  private CastEventHandler onCastDevicesUpdatedCallback;
+  private CastEventHandler onRemoteDisplaySessionStartCallback;
+  private CastEventHandler onRemoteDisplaySessionEndCallback;
+  private CastEventHandler onErrorCallback;
+
+  private bool isApplicationPaused = false;
+
+  private List<CastDevice> castDevices = new List<CastDevice>();
+  private CastError lastError = null;
+  private ICastRemoteDisplayExtension castRemoteDisplayExtension = null;
+
+  // When Unity specifies a camera but no render texture, we must generate one and assign it.
+  //  When casting is complete, we must reclaim it - this bool tracks that possibility.
+  private bool renderTextureGenerated = false;
+
   /**
    * Sets the event handlers that should be invoked by this class.
    */
   public void SetEventHandlers(CastEventHandler onCastDevicesUpdatedCallback,
       CastEventHandler onRemoteDisplaySessionStartCallback,
       CastEventHandler onRemoteDisplaySessionEndCallback,
-      CastErrorHandler onErrorCallback) {
+      CastEventHandler onErrorCallback) {
     this.onCastDevicesUpdatedCallback = onCastDevicesUpdatedCallback;
     this.onRemoteDisplaySessionStartCallback = onRemoteDisplaySessionStartCallback;
     this.onRemoteDisplaySessionEndCallback = onRemoteDisplaySessionEndCallback;
@@ -82,6 +83,7 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
    */
   void OnApplicationPause(bool paused) {
     isApplicationPaused = paused;
+    DiscardGeneratedTexture();
     UpdateRemoteDisplayTexture();
   }
 
@@ -103,6 +105,14 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
    */
   public List<CastDevice> GetCastDevices() {
     return castDevices;
+  }
+
+  /**
+   * Returns the last error encountered by the Cast Remote Display Plugin, or null if no error has
+   * occurred.
+   */
+  public CastError GetLastError() {
+    return lastError;
   }
 
   /**
@@ -130,11 +140,8 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
    */
   public void StopRemoteDisplaySession() {
     if (GetSelectedCastDeviceId() != null) {
+      DiscardGeneratedTexture();
       castRemoteDisplayExtension.StopRemoteDisplaySession();
-      if (renderTextureGenerated) {
-        CastRemoteDisplayManager.RemoteDisplayCamera.targetTexture = null;
-        renderTextureGenerated = false;
-      }
     }
   }
 
@@ -170,7 +177,7 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
           RenderTexture renderTexture = new RenderTexture(
               (int) manager.Configuration.ResolutionDimensions.x,
               (int) manager.Configuration.ResolutionDimensions.y,
-            24, RenderTextureFormat.ARGB32);
+              24, RenderTextureFormat.ARGB32);
           manager.RemoteDisplayCamera.targetTexture = renderTexture;
           renderTextureGenerated = true;
         }
@@ -243,9 +250,7 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
       StopRemoteDisplaySession();
     }
 
-    if (CastRemoteDisplayManager.RemoteDisplayCamera != null) {
-      CastRemoteDisplayManager.RemoteDisplayCamera.enabled = false;
-    }
+    DiscardGeneratedTexture();
 
     if (castRemoteDisplayExtension != null) {
       castRemoteDisplayExtension.Deactivate();
@@ -295,8 +300,8 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
   public void _callback_OnCastError(string rawErrorString) {
     string errorString = extractErrorString(rawErrorString);
     CastErrorCode errorCode = extractErrorCode(rawErrorString);
-
-    onErrorCallback(errorCode, errorString);
+    lastError = new CastError { errorCode = errorCode, message = errorString };
+    onErrorCallback();
   }
 
   /**
@@ -333,6 +338,20 @@ public class CastRemoteDisplayExtensionManager : MonoBehaviour {
       castDevices = castRemoteDisplayExtension.GetCastDevices();
     } else {
       Debug.Log("Can't update the list of cast devices because there is no extension object.");
+    }
+  }
+
+  private void DiscardGeneratedTexture() {
+    var manager = CastRemoteDisplayManager;
+    if (manager.RemoteDisplayCamera != null) {
+      manager.RemoteDisplayCamera.enabled = false;
+      if (renderTextureGenerated) {
+        if (manager.RemoteDisplayCamera.targetTexture != null) {
+          manager.RemoteDisplayCamera.targetTexture.DiscardContents();
+          manager.RemoteDisplayCamera.targetTexture = null;
+        }
+        renderTextureGenerated = false;
+      }
     }
   }
 }

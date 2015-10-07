@@ -1,8 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using System.Collections;
-using System.Collections.Generic;
 
 /**
  * Controller class for the default cast UI.
@@ -12,7 +8,7 @@ public class DefaultCastUIController : MonoBehaviour {
   /**
    * Outlet for the display manager.
    */
-  public CastRemoteDisplayManager displayManager;
+  public CastRemoteDisplayManager remoteDisplayManager;
 
   /**
    * Outlet for the cast debug UI element.
@@ -29,7 +25,8 @@ public class DefaultCastUIController : MonoBehaviour {
    */
   void Awake() {
     if (instance) {
-      Destroy(gameObject);
+      Debug.LogWarning("DebugCastUIController: Duplicate UI controller found - destroying.");
+      DestroyImmediate(gameObject);
       return;
     } else {
       instance = this;
@@ -45,11 +42,11 @@ public class DefaultCastUIController : MonoBehaviour {
       return;
     }
 
-    if (!displayManager) {
-      displayManager = UnityEngine.Object.FindObjectOfType<CastRemoteDisplayManager>();
+    if (!remoteDisplayManager) {
+      remoteDisplayManager = Object.FindObjectOfType<CastRemoteDisplayManager>();
     }
 
-    if (!displayManager) {
+    if (!remoteDisplayManager) {
       Debug.LogError("DebugCastUIController ERROR: No CastRemoteDisplayManager found!");
       Destroy(gameObject);
       return;
@@ -57,15 +54,15 @@ public class DefaultCastUIController : MonoBehaviour {
 
     gameObject.transform.localScale = Vector3.one;
     defaultUI = gameObject.GetComponentInChildren<CastDefaultUI>();
-    defaultUI.Initialize(displayManager);
+    defaultUI.Initialize(remoteDisplayManager);
   }
 
   /**
    * When the UI is enabled, listen to the relevant events for the UI.
    */
   void OnEnable() {
-    if (displayManager && defaultUI) {
-      defaultUI.Initialize(displayManager);
+    if (remoteDisplayManager && defaultUI) {
+      defaultUI.Initialize(remoteDisplayManager);
     }
   }
 
@@ -73,8 +70,8 @@ public class DefaultCastUIController : MonoBehaviour {
    * When the UI is disabled, stop listening to the relevant events.
    */
   void OnDisable() {
-    if (displayManager && defaultUI) {
-      defaultUI.Uninitialize(displayManager);
+    if (remoteDisplayManager && defaultUI) {
+      defaultUI.Uninitialize(remoteDisplayManager);
     }
   }
 }

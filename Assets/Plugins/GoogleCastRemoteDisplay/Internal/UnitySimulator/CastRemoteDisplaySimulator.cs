@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -37,7 +36,8 @@ public class CastRemoteDisplaySimulator : MonoBehaviour {
    */
   void Awake() {
     if (instance) {
-      Destroy(gameObject);
+      Debug.LogWarning("CastRemoteDisplaySimulator: Duplicate simulator found - destroying.");
+      DestroyImmediate(gameObject);
       return;
     } else {
       instance = this;

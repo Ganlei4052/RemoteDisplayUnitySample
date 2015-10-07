@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using System.Collections;
+using System.Collections.Generic;
 
 /**
  * Encapsulates the sprite outlets to organize assets required throughout the UI.
@@ -79,10 +77,10 @@ public class CastDefaultUI : MonoBehaviour {
   public void Initialize(CastRemoteDisplayManager manager) {
     if (!isInitialized) {
       displayManager = manager;
-      manager.castDevicesUpdatedEvent += OnCastDevicesUpdated;
-      manager.remoteDisplaySessionStartEvent += OnRemoteDisplaySessionStart;
-      manager.remoteDisplaySessionEndEvent += OnRemoteDisplaySessionEnd;
-      manager.remoteDisplayErrorEvent += OnRemoteDisplayError;
+      manager.castDevicesUpdatedEvent.AddListener(OnCastDevicesUpdated);
+      manager.remoteDisplaySessionStartEvent.AddListener(OnRemoteDisplaySessionStart);
+      manager.remoteDisplaySessionEndEvent.AddListener(OnRemoteDisplaySessionEnd);
+
       isInitialized = true;
 
       castButtonFrame.castButtonTappedCallback = OnCastButtonTapped;
@@ -100,10 +98,9 @@ public class CastDefaultUI : MonoBehaviour {
    */
   public void Uninitialize(CastRemoteDisplayManager manager) {
     if (isInitialized) {
-      manager.castDevicesUpdatedEvent -= OnCastDevicesUpdated;
-      manager.remoteDisplaySessionStartEvent -= OnRemoteDisplaySessionStart;
-      manager.remoteDisplaySessionEndEvent -= OnRemoteDisplaySessionEnd;
-      manager.remoteDisplayErrorEvent -= OnRemoteDisplayError;
+      manager.castDevicesUpdatedEvent.RemoveListener(OnCastDevicesUpdated);
+      manager.remoteDisplaySessionStartEvent.RemoveListener(OnRemoteDisplaySessionStart);
+      manager.remoteDisplaySessionEndEvent.RemoveListener(OnRemoteDisplaySessionEnd);
       isInitialized = false;
     }
   }
@@ -150,14 +147,6 @@ public class CastDefaultUI : MonoBehaviour {
   }
 
   /**
-   * Handles error messages from the Remote Display Manager.
-   */
-  public void OnRemoteDisplayError(CastRemoteDisplayManager manager,
-      CastErrorCode errorCode, string errorString) {
-    errorDialog.SetError(errorCode, errorString);
-  }
-
-  /**
    * Callback when the user taps close button.
    */
   public void OnCloseCastList() {
@@ -173,9 +162,11 @@ public class CastDefaultUI : MonoBehaviour {
       displayManager.StopRemoteDisplaySession();
     } else {
       HideAll();
-      if (errorDialog.ErrorCode == CastErrorCode.NoError) {
+      CastError error = displayManager.GetLastError();
+      if (error == null) {
         castListDialog.Show();
       } else {
+        errorDialog.SetError(error);
         errorDialog.gameObject.SetActive(true);
       }
     }
