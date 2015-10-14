@@ -51,9 +51,26 @@ public class CastDefaultUI : MonoBehaviour {
   public FirstTimeCastDialog firstTimeCastDialog;
 
   /**
+   * Dialog for disconnecting a cast device.
+   */
+  public CastDisconnectDialog castDisconnectDialog;
+
+  /**
    * Outlet for the sprites needed by various Cast UI components.
    */
+  [HideInInspector]
   public CastUISprites castUISprites;
+
+  /**
+   * Outlet for the animator needed by the cast button.
+   */
+  [HideInInspector]
+  public Animator connectingAnimator;
+
+  /**
+   * Dark background when showing dialogs.
+   */
+  public GameObject darkMask;
 
   /**
    * Current display manager - set by the UI Controller.
@@ -86,8 +103,13 @@ public class CastDefaultUI : MonoBehaviour {
       castButtonFrame.castButtonTappedCallback = OnCastButtonTapped;
       castListDialog.closeButtonTappedCallback = OnCloseCastList;
       errorDialog.okayButtonTappedCallback = OnConfirmErrorDialog;
+      castDisconnectDialog.disconnectButtonTappedCallback = OnDisconnectButtonTapped;
+      castDisconnectDialog.closeButtonTappedCallback = OnCloseDisconnectDialog;
 
       castButtonFrame.SetSprites(castUISprites);
+      castButtonFrame.SetConnectingAnimator(connectingAnimator);
+      castListDialog.SetCastButtonFrame(castButtonFrame);
+
       HideAll();
       castButtonFrame.Show();
     }
@@ -113,6 +135,8 @@ public class CastDefaultUI : MonoBehaviour {
     castListDialog.Hide();
     errorDialog.gameObject.SetActive(false);
     firstTimeCastDialog.Hide();
+    castDisconnectDialog.gameObject.SetActive(false);
+    darkMask.SetActive(false);
   }
 
   /**
@@ -124,6 +148,7 @@ public class CastDefaultUI : MonoBehaviour {
     if (!firstTimeCastShown) {
       HideAll();
       firstTimeCastDialog.Show();
+      darkMask.SetActive(true);
       PlayerPrefs.SetInt(FIRST_TIME_CAST_SHOWN, 1);
     }
     castListDialog.PopulateList(manager);
@@ -159,12 +184,16 @@ public class CastDefaultUI : MonoBehaviour {
    */
   public void OnCastButtonTapped() {
     if (isCasting) {
-      displayManager.StopRemoteDisplaySession();
+      // TODO
+      //castDisconnectDialog.SetDeviceName(displayManager.GetSelectedCastDeviceName());
+      castDisconnectDialog.gameObject.SetActive(true);
     } else {
       HideAll();
       CastError error = displayManager.GetLastError();
       if (error == null) {
         castListDialog.Show();
+        castButtonFrame.Show();
+        darkMask.SetActive(true);
       } else {
         errorDialog.SetError(error);
         errorDialog.gameObject.SetActive(true);
@@ -186,5 +215,30 @@ public class CastDefaultUI : MonoBehaviour {
   public void OnConfirmFirstTimeDialog() {
     HideAll();
     castButtonFrame.ShowNotCasting();
+  }
+
+  /**
+   * Called when the learn more button is pressed.
+   */
+  public void OnConfirmLearnMore() {
+    HideAll();
+    castButtonFrame.ShowNotCasting();
+    Application.OpenURL("http://google.com/cast");
+  }
+
+  /**
+   * Called when the disconnect button is pressed.
+   */
+  public void OnDisconnectButtonTapped() {
+    HideAll();
+    displayManager.StopRemoteDisplaySession();
+  }
+
+  /**
+   * Callback when the user taps close button.
+   */
+  public void OnCloseDisconnectDialog() {
+    HideAll();
+    castButtonFrame.ShowCasting();
   }
 }

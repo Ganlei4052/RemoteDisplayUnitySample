@@ -23,10 +23,22 @@ public class CastButtonFrame : MonoBehaviour {
   private CastUISprites uiSprites;
 
   /**
+   * A private copy of the UI cast connecting animation, so they can be used locally.
+   */
+  private Animator connectingAnimator;
+
+  /**
    * Sets the sprites, so they can be used internally.
    */
   public void SetSprites(CastUISprites sprites) {
     uiSprites = sprites;
+  }
+
+  /**
+   * Sets the cast connecting animator, so they can be used internally.
+   */
+  public void SetConnectingAnimator(Animator animator) {
+    connectingAnimator = animator;
   }
 
   /**
@@ -46,9 +58,19 @@ public class CastButtonFrame : MonoBehaviour {
   }
 
   /**
+   * Shows the "connecting" animation for the cast button.
+   */
+  public void ShowConnecting() {
+    Show();
+    connectingAnimator.enabled = true;
+    connectingAnimator.Play("CastButtonConnecting");
+  }
+
+  /**
    * Shows the cast button.
    */
   public void Show() {
+    connectingAnimator.enabled = false;
     gameObject.SetActive(true);
   }
 
@@ -56,6 +78,7 @@ public class CastButtonFrame : MonoBehaviour {
    * Hides the cast button.
    */
   public void Hide() {
+    connectingAnimator.enabled = false;
     gameObject.SetActive(false);
   }
 

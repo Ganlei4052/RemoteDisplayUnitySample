@@ -106,10 +106,10 @@ namespace UnityStandardAssets.CrossPlatformInput
     #endif
 
     /**
-     * Desired 1080p screen resolution.
+     * Desired 720p screen resolution.
      */
-    private int screenResolutionWidth = 1920;
-    private int screenResolutionHeight = 1080;
+    private int screenResolutionWidth = 1280;
+    private int screenResolutionHeight = 720;
 
     /**
      * Enable the game object.

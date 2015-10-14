@@ -5,15 +5,17 @@ namespace CompleteProject
     public class GameOverManager : MonoBehaviour
     {
         public PlayerHealth playerHealth;       // Reference to the player's health.
-
+        public GameObject restartButton;
+        public GameObject quitButton;
 
         Animator anim;                          // Reference to the animator component.
-
 
         void Awake ()
         {
             // Set up the reference.
             anim = GetComponent <Animator> ();
+            restartButton.SetActive(false);
+            quitButton.SetActive(false);
         }
 
 
@@ -24,6 +26,8 @@ namespace CompleteProject
             {
                 // ... tell the animator the game is over.
                 anim.SetTrigger ("GameOver");
+                restartButton.SetActive(true);
+                quitButton.SetActive(true);
             }
         }
     }

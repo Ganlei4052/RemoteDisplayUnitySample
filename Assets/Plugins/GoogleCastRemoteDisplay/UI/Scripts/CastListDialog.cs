@@ -51,6 +51,18 @@ public class CastListDialog : MonoBehaviour {
   private List<GameObject> currentButtons = new List<GameObject>();
 
   /**
+   * A reference to the cast button for animating the icon.
+   */
+  private CastButtonFrame castButtonFrame;
+
+  /**
+   * Sets the CastButtonFrame reference.
+   */
+  public void SetCastButtonFrame(CastButtonFrame frame) {
+    castButtonFrame = frame;
+  }
+
+  /**
    * Shows the list of cast devices, or shows the "searching for cast devices" state.
    */
   public void Show() {
@@ -114,6 +126,7 @@ public class CastListDialog : MonoBehaviour {
       string deviceId = listDevice.deviceId;
       button.button.onClick.AddListener(() => {
         manager.SelectCastDevice(deviceId);
+        castButtonFrame.ShowConnecting();
       });
       newButton.transform.SetParent(contentPanel.transform, false);
       currentButtons.Add(newButton);
