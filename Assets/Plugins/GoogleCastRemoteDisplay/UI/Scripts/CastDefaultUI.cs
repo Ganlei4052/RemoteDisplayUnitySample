@@ -1,244 +1,309 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 
-/**
- * Encapsulates the sprite outlets to organize assets required throughout the UI.
- */
-[System.Serializable]
-public class CastUISprites {
+namespace Google.Cast.RemoteDisplay.UI {
   /**
-   * Sprite for the "casting" status.
+   * Encapsulates the sprite outlets to organize assets required throughout the UI.
    */
-  public Sprite casting;
+  [System.Serializable]
+  public class CastUISprites {
+    /**
+     * Sprite for the "casting" status.
+     */
+    public Sprite casting;
 
-  /**
-   * Sprite for the "not casting" status.
-   */
-  public Sprite notCasting;
-}
-
-/**
- * Functions for the various children of the Default UI to callback to this class
- */
-public delegate void UICallback();
-
-/**
- * The default UI for Cast functionality.  Handles cast selection, display, starting/ending Cast
- * sessions, basic error display, etc.
- */
-public class CastDefaultUI : MonoBehaviour {
-
-  private const string FIRST_TIME_CAST_SHOWN = "firstTimeCastShown";
+    /**
+     * Sprite for the "not casting" status.
+     */
+    public Sprite notCasting;
+  }
 
   /**
-   * Container for the start/stop casting button.
+   * Functions for the various children of the Default UI to callback to this class
    */
-  public CastButtonFrame castButtonFrame;
+  public delegate void UICallback();
 
   /**
-   * The selection list UI element.
+   * The default UI for Cast functionality.  Handles cast selection, display, starting/ending Cast
+   * sessions, basic error display, etc.
    */
-   public CastListDialog castListDialog;
+  public class CastDefaultUI : MonoBehaviour {
 
-  /**
-   * Dialog for displaying errors from the Remote Display Manager.
-   */
-  public CastErrorDialog errorDialog;
+    private const string FIRST_TIME_CAST_SHOWN = "firstTimeCastShown";
 
-  /**
-   * Dialog for displaying the "first time cast" information.
-   */
-  public FirstTimeCastDialog firstTimeCastDialog;
+    /**
+     * Container for the start/stop casting button.
+     */
+    public CastButtonFrame castButtonFrame;
 
-  /**
-   * Dialog for disconnecting a cast device.
-   */
-  public CastDisconnectDialog castDisconnectDialog;
+    /**
+     * The selection list UI element.
+     */
+    public CastListDialog castListDialog;
 
-  /**
-   * Outlet for the sprites needed by various Cast UI components.
-   */
-  [HideInInspector]
-  public CastUISprites castUISprites;
+    /**
+     * Dialog for displaying errors from the Remote Display Manager.
+     */
+    public CastErrorDialog errorDialog;
 
-  /**
-   * Outlet for the animator needed by the cast button.
-   */
-  [HideInInspector]
-  public Animator connectingAnimator;
+    /**
+     * Dialog for displaying the "first time cast" information.
+     */
+    public FirstTimeCastDialog firstTimeCastDialog;
 
-  /**
-   * Dark background when showing dialogs.
-   */
-  public GameObject darkMask;
+    /**
+     * Dialog for disconnecting a cast device.
+     */
+    public CastDisconnectDialog castDisconnectDialog;
 
-  /**
-   * Current display manager - set by the UI Controller.
-   */
-  private CastRemoteDisplayManager displayManager;
+    /**
+     * Controls the enabling of the default first time cast UI.  This will automatically turn on
+     * the dialog if a cast device is discovered and the user has not seen it yet.
+     */
+    public bool enableFirstTimeCastUI = false;
 
-  /**
-   * Tracks whether the UI Controller has performed initialization
-   */
-  private bool isInitialized;
+    /**
+     * Outlet for the sprites needed by various Cast UI components.
+     */
+    public CastUISprites castUISprites;
 
-  /**
-   * Tracks whether the app is casting.
-   */
-  private bool isCasting = false;
+    /**
+     * Outlet for the animator needed by the cast button.
+     */
+    public Animator connectingAnimator;
 
-  /**
-   * Listens to the cast manager notifications, and sets up the start
-   * state for the UI.
-   */
-  public void Initialize(CastRemoteDisplayManager manager) {
-    if (!isInitialized) {
-      displayManager = manager;
-      manager.castDevicesUpdatedEvent.AddListener(OnCastDevicesUpdated);
-      manager.remoteDisplaySessionStartEvent.AddListener(OnRemoteDisplaySessionStart);
-      manager.remoteDisplaySessionEndEvent.AddListener(OnRemoteDisplaySessionEnd);
+    /**
+     * Dark background when showing dialogs.
+     */
+    public GameObject darkMask;
 
-      isInitialized = true;
+    /**
+     * Tracks whether the UI Controller has performed initialization
+     */
+    private bool isInitialized;
 
-      castButtonFrame.castButtonTappedCallback = OnCastButtonTapped;
-      castListDialog.closeButtonTappedCallback = OnCloseCastList;
-      errorDialog.okayButtonTappedCallback = OnConfirmErrorDialog;
-      castDisconnectDialog.disconnectButtonTappedCallback = OnDisconnectButtonTapped;
-      castDisconnectDialog.closeButtonTappedCallback = OnCloseDisconnectDialog;
+    /**
+     * Tracks whether the app is casting.
+     */
+    private bool isCasting = false;
 
-      castButtonFrame.SetSprites(castUISprites);
-      castButtonFrame.SetConnectingAnimator(connectingAnimator);
-      castListDialog.SetCastButtonFrame(castButtonFrame);
 
-      HideAll();
-      castButtonFrame.Show();
+    /**
+     * There should only be one CastDefaultUI at a time - this allows easy programatic calling of
+     *  public functionality.
+     */
+    private static CastDefaultUI instance = null;
+    public static CastDefaultUI GetInstance() {
+      return instance;
     }
-  }
 
-  /**
-   * Unlistens to the cast manager notifications.
-   */
-  public void Uninitialize(CastRemoteDisplayManager manager) {
-    if (isInitialized) {
-      manager.castDevicesUpdatedEvent.RemoveListener(OnCastDevicesUpdated);
-      manager.remoteDisplaySessionStartEvent.RemoveListener(OnRemoteDisplaySessionStart);
-      manager.remoteDisplaySessionEndEvent.RemoveListener(OnRemoteDisplaySessionEnd);
-      isInitialized = false;
-    }
-  }
-
-  /**
-   * Resets the UI to hidden, so the proper elements can be shown.
-   */
-  private void HideAll() {
-    castButtonFrame.Hide();
-    castListDialog.Hide();
-    errorDialog.gameObject.SetActive(false);
-    firstTimeCastDialog.Hide();
-    castDisconnectDialog.gameObject.SetActive(false);
-    darkMask.SetActive(false);
-  }
-
-  /**
-   * When the list of devices updates, update the list. Called when the list of
-   * devices updates.
-   */
-  public void OnCastDevicesUpdated(CastRemoteDisplayManager manager) {
-    bool firstTimeCastShown = PlayerPrefs.GetInt(FIRST_TIME_CAST_SHOWN) == 0 ? false : true;
-    if (!firstTimeCastShown) {
-      HideAll();
-      firstTimeCastDialog.Show();
-      darkMask.SetActive(true);
-      PlayerPrefs.SetInt(FIRST_TIME_CAST_SHOWN, 1);
-    }
-    castListDialog.PopulateList(manager);
-  }
-
-  /**
-   * Closes the list of devices, sets up the casting display.
-   */
-  public void OnRemoteDisplaySessionStart(CastRemoteDisplayManager manager) {
-    isCasting = true;
-    HideAll();
-    castButtonFrame.ShowCasting();
-  }
-
-  /**
-   * Cleans up display when the session is over.
-   */
-  public void OnRemoteDisplaySessionEnd(CastRemoteDisplayManager manager) {
-    isCasting = false;
-    castButtonFrame.ShowNotCasting();
-  }
-
-  /**
-   * Callback when the user taps close button.
-   */
-  public void OnCloseCastList() {
-    HideAll();
-    castButtonFrame.ShowNotCasting();
-  }
-
-  /**
-   * Either stop casting or open the list of detected cast devices.
-   */
-  public void OnCastButtonTapped() {
-    if (isCasting) {
-      // TODO
-      //castDisconnectDialog.SetDeviceName(displayManager.GetSelectedCastDeviceName());
-      castDisconnectDialog.gameObject.SetActive(true);
-    } else {
-      HideAll();
-      CastError error = displayManager.GetLastError();
-      if (error == null) {
-        castListDialog.Show();
-        castButtonFrame.Show();
-        darkMask.SetActive(true);
+    /**
+     * If a default UI already exists, destroy the new one.
+     */
+    void Awake() {
+      if (instance) {
+        Debug.LogWarning("CastDefaultUI: Duplicate UI controller found - destroying.");
+        DestroyImmediate(gameObject);
+        return;
       } else {
-        errorDialog.SetError(error);
-        errorDialog.gameObject.SetActive(true);
+        instance = this;
+        DontDestroyOnLoad(gameObject);
       }
     }
-  }
 
-  /**
-   * Called when the error dialog is confirmed.
-   */
-  public void OnConfirmErrorDialog() {
-    HideAll();
-    castButtonFrame.ShowNotCasting();
-  }
+    /**
+     * Checks for the required remote display manager, and shows the default UI.
+     */
+    void Start() {
+      if (instance != this) {
+        return;
+      }
 
-  /**
-   * Called when the first time dialog is confirmed.
-   */
-  public void OnConfirmFirstTimeDialog() {
-    HideAll();
-    castButtonFrame.ShowNotCasting();
-  }
+      if (!CastRemoteDisplayManager.GetInstance()) {
+        Debug.LogError("DebugCastUIController ERROR: No CastRemoteDisplayManager found!");
+        Destroy(gameObject);
+        return;
+      }
 
-  /**
-   * Called when the learn more button is pressed.
-   */
-  public void OnConfirmLearnMore() {
-    HideAll();
-    castButtonFrame.ShowNotCasting();
-    Application.OpenURL("http://google.com/cast");
-  }
+      GetComponent<Canvas>().enabled = true;
+      Initialize();
+    }
 
-  /**
-   * Called when the disconnect button is pressed.
-   */
-  public void OnDisconnectButtonTapped() {
-    HideAll();
-    displayManager.StopRemoteDisplaySession();
-  }
+    /**
+     * When the UI is enabled, listen to the relevant events for the UI.
+     */
+    void OnEnable() {
+      Initialize();
+    }
 
-  /**
-   * Callback when the user taps close button.
-   */
-  public void OnCloseDisconnectDialog() {
-    HideAll();
-    castButtonFrame.ShowCasting();
+    /**
+     * When the UI is disabled, stop listening to the relevant events.
+     */
+    void OnDisable() {
+      Uninitialize();
+    }
+
+    /**
+     * Listens to the cast manager notifications, and sets up the start
+     * state for the UI.
+     */
+    public void Initialize() {
+      CastRemoteDisplayManager manager = CastRemoteDisplayManager.GetInstance();
+      if (!isInitialized && manager) {
+        manager.CastDevicesUpdatedEvent.AddListener(OnCastDevicesUpdated);
+        manager.RemoteDisplaySessionStartEvent.AddListener(OnRemoteDisplaySessionStart);
+        manager.RemoteDisplaySessionEndEvent.AddListener(OnRemoteDisplaySessionEnd);
+
+        isInitialized = true;
+
+        castButtonFrame.castButtonTappedCallback = OnCastButtonTapped;
+        castListDialog.closeButtonTappedCallback = OnCloseCastList;
+        errorDialog.okayButtonTappedCallback = OnConfirmErrorDialog;
+        castDisconnectDialog.disconnectButtonTappedCallback = OnDisconnectButtonTapped;
+        castDisconnectDialog.closeButtonTappedCallback = OnCloseDisconnectDialog;
+
+        castButtonFrame.UiSprites = castUISprites;
+        castButtonFrame.ConnectingAnimator = connectingAnimator;
+        castListDialog.CastButtonFrame = castButtonFrame;
+
+        HideAll();
+        castButtonFrame.Show();
+      }
+    }
+
+    /**
+     * Unlistens to the cast manager notifications.
+     */
+    public void Uninitialize() {
+      CastRemoteDisplayManager manager = CastRemoteDisplayManager.GetInstance();
+      if (isInitialized && manager) {
+        instance = null;
+        manager.CastDevicesUpdatedEvent.RemoveListener(OnCastDevicesUpdated);
+        manager.RemoteDisplaySessionStartEvent.RemoveListener(OnRemoteDisplaySessionStart);
+        manager.RemoteDisplaySessionEndEvent.RemoveListener(OnRemoteDisplaySessionEnd);
+        isInitialized = false;
+      }
+    }
+
+    /**
+     * Resets the UI to hidden, so the proper elements can be shown.
+     */
+    private void HideAll() {
+      castButtonFrame.Hide();
+      castListDialog.Hide();
+      errorDialog.gameObject.SetActive(false);
+      firstTimeCastDialog.Hide();
+      castDisconnectDialog.gameObject.SetActive(false);
+      darkMask.SetActive(false);
+    }
+
+    /**
+     * When the list of devices updates, update the list. Called when the list of
+     * devices updates.
+     */
+    public void OnCastDevicesUpdated(CastRemoteDisplayManager manager) {
+      if (enableFirstTimeCastUI) {
+        ShowFirstTimeCastDialogIfNeeded();
+      }
+      castListDialog.PopulateList(manager);
+    }
+
+    /**
+     * Shows the first time cast dialog, if it hasn't yet been shown.
+     */
+    public void ShowFirstTimeCastDialogIfNeeded() {
+      bool firstTimeCastShown = PlayerPrefs.GetInt(FIRST_TIME_CAST_SHOWN) == 0 ? false : true;
+      if (!firstTimeCastShown && !isCasting) {
+        HideAll();
+        firstTimeCastDialog.Show();
+        darkMask.SetActive(true);
+        PlayerPrefs.SetInt(FIRST_TIME_CAST_SHOWN, 1);
+      }
+    }
+
+    /**
+     * Closes the list of devices, sets up the casting display.
+     */
+    public void OnRemoteDisplaySessionStart(CastRemoteDisplayManager manager) {
+      isCasting = true;
+      HideAll();
+      castButtonFrame.ShowCasting();
+    }
+
+    /**
+     * Cleans up display when the session is over.
+     */
+    public void OnRemoteDisplaySessionEnd(CastRemoteDisplayManager manager) {
+      isCasting = false;
+      castButtonFrame.ShowNotCasting();
+    }
+
+    /**
+     * Callback when the user taps close button.
+     */
+    public void OnCloseCastList() {
+      HideAll();
+      castButtonFrame.ShowNotCasting();
+    }
+
+    /**
+     * Either stop casting or open the list of detected cast devices.
+     */
+    public void OnCastButtonTapped() {
+      HideAll();
+      darkMask.SetActive(true);
+      if (isCasting) {
+        castDisconnectDialog.gameObject.SetActive(true);
+      } else {
+        CastError error = CastRemoteDisplayManager.GetInstance().GetLastError();
+        if (error == null) {
+          darkMask.SetActive(true);
+          castListDialog.Show();
+        } else {
+          errorDialog.SetError(error);
+          errorDialog.gameObject.SetActive(true);
+        }
+      }
+    }
+
+    /**
+     * Called when the error dialog is confirmed.
+     */
+    public void OnConfirmErrorDialog() {
+      HideAll();
+      castButtonFrame.ShowNotCasting();
+    }
+
+    /**
+     * Called when the first time dialog is confirmed.
+     */
+    public void OnConfirmFirstTimeDialog() {
+      HideAll();
+      castButtonFrame.ShowNotCasting();
+    }
+
+    /**
+     * Called when the learn more button is pressed.
+     */
+    public void OnConfirmLearnMore() {
+      HideAll();
+      castButtonFrame.ShowNotCasting();
+      Application.OpenURL("http://google.com/cast");
+    }
+
+    /**
+     * Called when the disconnect button is pressed.
+     */
+    public void OnDisconnectButtonTapped() {
+      HideAll();
+      CastRemoteDisplayManager.GetInstance().StopRemoteDisplaySession();
+    }
+
+    /**
+     * Callback when the user taps close button.
+     */
+    public void OnCloseDisconnectDialog() {
+      HideAll();
+      castButtonFrame.ShowCasting();
+    }
   }
 }

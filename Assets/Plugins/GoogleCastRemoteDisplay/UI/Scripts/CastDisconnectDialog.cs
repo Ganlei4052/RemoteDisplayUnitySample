@@ -2,51 +2,53 @@
 using UnityEngine.UI;
 using System.Collections;
 
-/**
- * The dialog for displaying the disconnect dialog.
- */
-public class CastDisconnectDialog : MonoBehaviour {
-
+namespace Google.Cast.RemoteDisplay.UI {
   /**
-   * Outlet for the disconnect button.
+   * The dialog for displaying the disconnect dialog.
    */
-  public Button disconnectButton;
+  public class CastDisconnectDialog : MonoBehaviour {
 
-  /**
-   * The current cast device name.
-   */
-  public Text deviceName;
+    /**
+     * Outlet for the disconnect button.
+     */
+    public Button disconnectButton;
 
-  /**
-   * The callback for disconnecting and closing the dialog.
-   */
-  public UICallback disconnectButtonTappedCallback;
+    /**
+     * The current cast device name.
+     */
+    public Text deviceName;
 
-  /**
-   * The callback for closing the disconnect dialog.
-   */
-  public UICallback closeButtonTappedCallback;
+    /**
+     * The callback for disconnecting and closing the dialog.
+     */
+    public UICallback disconnectButtonTappedCallback;
 
-  /**
-   * Set the cast device name for the dialog title.
-   */
-  public void SetDeviceName(string name) {
-    deviceName.text = name;
-  }
+    /**
+     * The callback for closing the disconnect dialog.
+     */
+    public UICallback closeButtonTappedCallback;
 
-  /**
-   * Triggers the callback for closing the disconnect dialog.  Set as the OnClick function for
-   * DisconnectButton.
-   */
-  public void OnDisconnectButtonTapped() {
-    disconnectButtonTappedCallback();
-  }
+    /**
+     * Set the cast device name for the dialog title.
+     */
+    public void SetDeviceName(string name) {
+      deviceName.text = name;
+    }
 
-  /**
-   * Triggers the callback for closing the disconnect dialog.  Set as the OnClick function for
-   * CloseButton.
-   */
-  public void OnCloseButtonTapped() {
-    closeButtonTappedCallback();
+    /**
+     * Triggers the callback for closing the disconnect dialog.  Set as the OnClick function for
+     * DisconnectButton.
+     */
+    public void OnDisconnectButtonTapped() {
+      disconnectButtonTappedCallback();
+    }
+
+    /**
+     * Triggers the callback for closing the disconnect dialog.  Set as the OnClick function for
+     * CloseButton.
+     */
+    public void OnCloseButtonTapped() {
+      closeButtonTappedCallback();
+    }
   }
 }

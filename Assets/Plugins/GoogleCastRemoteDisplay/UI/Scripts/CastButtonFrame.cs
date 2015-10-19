@@ -1,92 +1,102 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
-/**
- * Contains the functionality for the cast button and corresponding frame.
- */
-public class CastButtonFrame : MonoBehaviour {
-
+namespace Google.Cast.RemoteDisplay.UI {
   /**
-   * Start/stop casting button.
+   * Contains the functionality for the cast button and corresponding frame.
    */
-  public Button castButton;
+  public class CastButtonFrame : MonoBehaviour {
 
-  /**
-   * The callback for tapping the cast button.
-   */
-  public UICallback castButtonTappedCallback;
+    /**
+     * Start/stop casting button.
+     */
+    public Button castButton;
 
-  /**
-   * A private copy of the UI sprites, so they can be used locally.
-   */
-  private CastUISprites uiSprites;
+    /**
+     * The callback for tapping the cast button.
+     */
+    public UICallback castButtonTappedCallback;
 
-  /**
-   * A private copy of the UI cast connecting animation, so they can be used locally.
-   */
-  private Animator connectingAnimator;
+    /**
+     * Tracks whether the frame is currently casting.
+     */
+    private bool isCasting = false;
 
-  /**
-   * Sets the sprites, so they can be used internally.
-   */
-  public void SetSprites(CastUISprites sprites) {
-    uiSprites = sprites;
-  }
+    /**
+     * A private copy of the UI sprites, so they can be used locally.
+     */
+    private CastUISprites uiSprites;
+    public CastUISprites UiSprites {
+      set {
+        uiSprites = value;
+      }
+    }
 
-  /**
-   * Sets the cast connecting animator, so they can be used internally.
-   */
-  public void SetConnectingAnimator(Animator animator) {
-    connectingAnimator = animator;
-  }
+    /**
+     * A private copy of the UI cast connecting animation, so they can be used locally.
+     */
+    private Animator connectingAnimator;
+    public Animator ConnectingAnimator {
+      set {
+        connectingAnimator = value;
+      }
+    }
 
-  /**
-   * Shows the "casting" state for the cast button.
-   */
-  public void ShowCasting() {
-    castButton.image.sprite = uiSprites.casting;
-    Show();
-  }
+    /**
+     * Shows the "casting" state for the cast button.
+     */
+    public void ShowCasting() {
+      isCasting = true;
+      connectingAnimator.enabled = false;
+      castButton.image.sprite = uiSprites.casting;
+      Show();
+    }
 
-  /**
-   * Shows the "not casting" state for the cast button.
-   */
-  public void ShowNotCasting() {
-    castButton.image.sprite = uiSprites.notCasting;
-    Show();
-  }
+    /**
+     * Shows the "connecting" animation for the cast button.
+     */
+    public void ShowConnecting() {
+      // The state is already casting - do nothing.
+      if (isCasting) {
+        return;
+      }
+      Show();
+      connectingAnimator.enabled = true;
+      connectingAnimator.Play("CastButtonConnecting");
+    }
 
-  /**
-   * Shows the "connecting" animation for the cast button.
-   */
-  public void ShowConnecting() {
-    Show();
-    connectingAnimator.enabled = true;
-    connectingAnimator.Play("CastButtonConnecting");
-  }
+    /**
+     * Shows the "not casting" state for the cast button.
+     */
+    public void ShowNotCasting() {
+      isCasting = false;
+      connectingAnimator.enabled = false;
+      castButton.image.sprite = uiSprites.notCasting;
+      Show();
+    }
 
-  /**
-   * Shows the cast button.
-   */
-  public void Show() {
-    connectingAnimator.enabled = false;
-    gameObject.SetActive(true);
-  }
+    /**
+     * Shows the cast button.
+     */
+    public void Show() {
+      connectingAnimator.enabled = false;
+      gameObject.SetActive(true);
+    }
 
-  /**
-   * Hides the cast button.
-   */
-  public void Hide() {
-    connectingAnimator.enabled = false;
-    gameObject.SetActive(false);
-  }
+    /**
+     * Hides the cast button.
+     */
+    public void Hide() {
+      connectingAnimator.enabled = false;
+      gameObject.SetActive(false);
+    }
 
-  /**
-   * Triggers the callback for tapping the cast button.  Set as the OnClick function for
-   * CastButton.
-   */
-  public void OnCastButtonTapped() {
-    castButtonTappedCallback();
+    /**
+     * Triggers the callback for tapping the cast button.  Set as the OnClick function for
+     * CastButton.
+     */
+    public void OnCastButtonTapped() {
+      castButtonTappedCallback();
+    }
   }
 }

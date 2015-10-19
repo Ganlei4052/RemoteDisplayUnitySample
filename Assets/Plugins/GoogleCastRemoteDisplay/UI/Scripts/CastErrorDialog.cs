@@ -1,39 +1,41 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
-/**
- * The dialog for displaying error messages from the cast remote display manager.
- */
-public class CastErrorDialog : MonoBehaviour {
-
+namespace Google.Cast.RemoteDisplay.UI {
   /**
-   * Outlet for the confirm button.
+   * The dialog for displaying error messages from the cast remote display manager.
    */
-  public Button okayButton;
+  public class CastErrorDialog : MonoBehaviour {
 
-  /**
-   * Outlet for the status label to display errors.
-   */
-  public Text statusLabel;
+    /**
+     * Outlet for the confirm button.
+     */
+    public Button okayButton;
 
-  /**
-   * The callback for closing the error dialog.
-   */
-  public UICallback okayButtonTappedCallback;
+    /**
+     * Outlet for the status label to display errors.
+     */
+    public Text statusLabel;
 
-  /**
-   * When an error is thrown, set up the error dialog to display it when the Cast button is pressed.
-   */
-  public void SetError(CastError error) {
-    statusLabel.text = "Error " + error.errorCode + " - " + error.message;
-  }
+    /**
+     * The callback for closing the error dialog.
+     */
+    public UICallback okayButtonTappedCallback;
 
-  /**
-   * Triggers the callback for closing the error dialog.  Set as the OnClick function for
-   * OkayButton.
-   */
-  public void OnOkayButtonTapped() {
-    okayButtonTappedCallback();
+    /**
+     * When an error is thrown, set up the error dialog to display it when the Cast button is
+     * pressed.
+     */
+    public void SetError(CastError error) {
+      statusLabel.text = "Error " + error.errorCode + " - " + error.message;
+    }
+
+    /**
+     * Triggers the callback for closing the error dialog.  Set as the OnClick function for
+     * OkayButton.
+     */
+    public void OnOkayButtonTapped() {
+      okayButtonTappedCallback();
+    }
   }
 }

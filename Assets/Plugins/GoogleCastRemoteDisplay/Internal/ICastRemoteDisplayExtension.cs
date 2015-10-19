@@ -1,32 +1,33 @@
 // Copyright 2015 Google Inc.
 using UnityEngine;
-using System;
 using System.Collections.Generic;
 
-/**
- * Extends Unity lifecycle methods and adds methods that rely on platform-specific native code.
- */
-public interface ICastRemoteDisplayExtension {
+namespace Google.Cast.RemoteDisplay.Internal {
+  /**
+   * Extends Unity lifecycle methods and adds methods that rely on platform-specific native code.
+   */
+  public interface ICastRemoteDisplayExtension {
 
-  void Activate();
+    void Activate();
 
-  void Deactivate();
+    void Deactivate();
 
-  void Update();
+    void RenderFrame();
 
-  void OnAudioFilterRead(float[] data, int channels);
+    void OnAudioFilterRead(float[] data, int channels);
 
-  void OnRemoteDisplaySessionStart(string deviceName);
+    void OnRemoteDisplaySessionStart(string deviceName);
 
-  void OnRemoteDisplaySessionStop();
+    void OnRemoteDisplaySessionStop();
 
-  List<CastDevice> GetCastDevices();
+    List<CastDevice> GetCastDevices();
 
-  void SelectCastDevice(string deviceId);
+    void SelectCastDevice(string deviceId);
 
-  void SetRemoteDisplayTexture(Texture texture);
+    void SetRemoteDisplayTexture(Texture texture);
 
-  void StopRemoteDisplaySession();
+    void StopRemoteDisplaySession();
 
-  string GetSelectedCastDeviceId();
+    string GetSelectedCastDeviceId();
+  }
 }

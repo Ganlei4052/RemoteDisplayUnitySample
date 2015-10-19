@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+using Google.Cast.RemoteDisplay;
+
 /**
  * Manages the camera used for the mobile and the remote Cast device.
  * The mobile camera will toggle when casting.
@@ -38,9 +40,9 @@ public class RemoteCameraManager : MonoBehaviour {
       return;
     }
 
-    displayManager.remoteDisplaySessionStartEvent.AddListener(OnRemoteDisplaySessionStart);
-    displayManager.remoteDisplaySessionEndEvent.AddListener(OnRemoteDisplaySessionEnd);
-    displayManager.remoteDisplayErrorEvent.AddListener(OnRemoteDisplayError);
+    displayManager.RemoteDisplaySessionStartEvent.AddListener(OnRemoteDisplaySessionStart);
+    displayManager.RemoteDisplaySessionEndEvent.AddListener(OnRemoteDisplaySessionEnd);
+    displayManager.RemoteDisplayErrorEvent.AddListener(OnRemoteDisplayError);
     if (displayManager.GetSelectedCastDeviceId() != null) {
       RemoteDisplayCamera.enabled = true;
       displayManager.RemoteDisplayCamera = MainCamera;
@@ -53,10 +55,11 @@ public class RemoteCameraManager : MonoBehaviour {
   * Stop listening to the CastRemoteDisplayManager events.
   */
   private void OnDestroy() {
-    displayManager.remoteDisplaySessionStartEvent.RemoveListener(OnRemoteDisplaySessionStart);
-    displayManager.remoteDisplaySessionEndEvent.RemoveListener(OnRemoteDisplaySessionEnd);
-    displayManager.remoteDisplayErrorEvent.RemoveListener(OnRemoteDisplayError);
+    displayManager.RemoteDisplaySessionStartEvent.RemoveListener(OnRemoteDisplaySessionStart);
+    displayManager.RemoteDisplaySessionEndEvent.RemoveListener(OnRemoteDisplaySessionEnd);
+    displayManager.RemoteDisplayErrorEvent.RemoveListener(OnRemoteDisplayError);
   }
+  
 
   /**
    * Cast session started, so change the mobile device camera.

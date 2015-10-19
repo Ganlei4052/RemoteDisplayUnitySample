@@ -17,7 +17,7 @@ namespace CompleteProject
 
     public void Start () {
       Time.timeScale = 0f;
-      castUIController = GameObject.Find("DefaultCastUIController");
+      castUIController = GameObject.Find("CastDefaultUI");
       pausePanel.SetActive(false);
     }
 
