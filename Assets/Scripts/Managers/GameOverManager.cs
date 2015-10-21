@@ -1,19 +1,20 @@
 ﻿using UnityEngine;
 
+using Google.Cast.RemoteDisplay;
+
 namespace CompleteProject
 {
     public class GameOverManager : MonoBehaviour
     {
         public PlayerHealth playerHealth;       // Reference to the player's health.
+        public GameObject gameOverButtonCanvas;
+        public GameObject gameOverRemoteCanvas;
         public GameObject restartButton;
         public GameObject quitButton;
-
-        Animator anim;                          // Reference to the animator component.
 
         void Awake ()
         {
             // Set up the reference.
-            anim = GetComponent <Animator> ();
             restartButton.SetActive(false);
             quitButton.SetActive(false);
         }
@@ -25,9 +26,15 @@ namespace CompleteProject
             if(playerHealth.currentHealth <= 0)
             {
                 // ... tell the animator the game is over.
-                anim.SetTrigger ("GameOver");
+                gameOverButtonCanvas.GetComponent<Canvas>().enabled = true;
+                gameOverButtonCanvas.GetComponent<Animator>().SetTrigger("GameOver");
                 restartButton.SetActive(true);
                 quitButton.SetActive(true);
+                if (CastRemoteDisplayManager.GetInstance().IsCasting()) {
+                    gameOverRemoteCanvas.GetComponent<Animator>().SetTrigger("GameOver");
+                } else {
+                    gameOverRemoteCanvas.SetActive(false);
+                }
             }
         }
     }
