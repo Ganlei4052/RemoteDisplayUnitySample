@@ -58,6 +58,7 @@ namespace Google.Cast.RemoteDisplay {
       set {
         remoteDisplayCamera = value;
         if (extensionManager != null) {
+          // Must be called after the new value has been set.
           extensionManager.UpdateRemoteDisplayTexture();
         }
       }
@@ -96,12 +97,15 @@ namespace Google.Cast.RemoteDisplay {
      * Used to play audio on the remote display.
      */
     [SerializeField]
-    private CastRemoteDisplayAudioListener remoteAudioListener;
-    public CastRemoteDisplayAudioListener RemoteAudioListener {
+    private AudioListener remoteAudioListener;
+    public AudioListener RemoteAudioListener {
       get {
         return remoteAudioListener;
       }
       set {
+        if (extensionManager) {
+          extensionManager.UpdateAudioListener(remoteAudioListener, value);
+        }
         remoteAudioListener = value;
       }
     }
@@ -153,6 +157,9 @@ namespace Google.Cast.RemoteDisplay {
       }
 
       extensionManager = gameObject.AddComponent<CastRemoteDisplayExtensionManager>();
+      // Notify the extension manager that a new audio listener was added so that it can attach the
+      // required script to it.
+      extensionManager.UpdateAudioListener(null, remoteAudioListener);
       extensionManager.SetEventHandlers(fireCastDevicesUpdatedEvent,
           fireRemoteDisplaySessionStartEvent, fireRemoteDisplaySessionEndEvent,
           fireErrorEvent);
@@ -168,15 +175,15 @@ namespace Google.Cast.RemoteDisplay {
     /**
      * Returns the list of available cast devices for remote display.
      */
-    public List<CastDevice> GetCastDevices() {
-      return extensionManager.GetCastDevices();
+    public IList<CastDevice> GetCastDevices() {
+      return extensionManager.GetCastDevices().AsReadOnly();
     }
 
     /**
-     * Returns the ID of the selected cast device for remote display.
+     * Returns the CastDevice selected for remote display.
      */
-    public string GetSelectedCastDeviceId() {
-      return extensionManager.GetSelectedCastDeviceId();
+    public CastDevice GetSelectedCastDevice() {
+      return extensionManager.GetSelectedCastDevice();
     }
 
     /**
@@ -239,8 +246,8 @@ namespace Google.Cast.RemoteDisplay {
         Debug.LogError("Got an error callback but no error was found");
         return;
       }
-      Debug.LogError("Remote display error. ErrorCode: " + error.errorCode +
-          " errorMessage: " + error.message);
+      Debug.LogError("Remote display error. ErrorCode: " + error.ErrorCode +
+          " errorMessage: " + error.Message);
 
       // Always disable the manager in case of an error.
       gameObject.SetActive(false);
@@ -366,22 +373,51 @@ namespace Google.Cast.RemoteDisplay {
    * Represents a cast device.
    */
   [System.Serializable]
-  public struct CastDevice {
+  public class CastDevice {
     /**
      * The ID of the device. This value must be passed when selecting a cast device to start the
      * remote display session.
      */
-    public string deviceId;
+    [SerializeField]
+    private string deviceId;
+    public string DeviceId {
+      get {
+        return deviceId;
+      }
+    }
 
     /**
      * Name of the device. This should be used when populating a list of devices in the UI.
      */
-    public string deviceName;
+    [SerializeField]
+    private string deviceName;
+    public string DeviceName {
+      get {
+        return deviceName;
+      }
+    }
 
     /**
      * The current status of the device.
      */
-    public string status;
+    [SerializeField]
+    private string status;
+    public string Status {
+      get {
+        return status;
+      }
+    }
+
+    private CastDevice() {}
+
+    /**
+     * Constructor for CastDevice.
+     */
+    public CastDevice(string deviceId, string deviceName, string status) {
+      this.deviceId = deviceId;
+      this.deviceName = deviceName;
+      this.status = status;
+    }
   }
 
   /**
@@ -393,12 +429,32 @@ namespace Google.Cast.RemoteDisplay {
      * The ID of the device. This value must be passed when selecting a cast device to start the
      * remote display session.
      */
-    public CastErrorCode errorCode;
+    private CastErrorCode errorCode;
+    public CastErrorCode ErrorCode {
+      get {
+        return errorCode;
+      }
+    }
 
     /**
      * Name of the device. This should be used when populating a list of devices in the UI.
      */
-    public string message;
+    private string message;
+    public string Message {
+      get {
+        return message;
+      }
+    }
+
+    private CastError() {}
+
+    /**
+     * Constructor for CastError.
+     */
+    public CastError(CastErrorCode errorCode, string message) {
+      this.errorCode = errorCode;
+      this.message = message;
+    }
   }
 
   /**
@@ -414,7 +470,12 @@ namespace Google.Cast.RemoteDisplay {
      * the resolution set here.
      */
     [Tooltip("iOS fully supported. Changes camera resolution on Android and Unity simulator.")]
-    public CastRemoteDisplayResolution resolution;
+    private CastRemoteDisplayResolution resolution;
+    public CastRemoteDisplayResolution Resolution {
+      get {
+        return resolution;
+      }
+    }
 
     /**
      * The target framerate to use for the remote display session. Slower devices and bandwidth
@@ -422,7 +483,12 @@ namespace Google.Cast.RemoteDisplay {
      * This field is iOS-only. Ignored by Android and Unity simulator.
      */
     [Tooltip("iOS-only. Ignored by Android and Unity simulator.")]
-    public CastRemoteDisplayFrameRate frameRate;
+    private CastRemoteDisplayFrameRate frameRate;
+    public CastRemoteDisplayFrameRate FrameRate {
+      get {
+        return frameRate;
+      }
+    }
 
     /**
      * The target delay to use for the remote display session. Lower target delays might improve
@@ -431,16 +497,26 @@ namespace Google.Cast.RemoteDisplay {
      * This field is iOS-only. Ignored by Android and Unity simulator.
      */
     [Tooltip("iOS-only. Ignored by Android and Unity simulator.")]
-    public CastRemoteDisplayTargetDelay targetDelay;
+    private CastRemoteDisplayTargetDelay targetDelay;
+    public CastRemoteDisplayTargetDelay TargetDelay {
+      get {
+        return targetDelay;
+      }
+    }
 
     /**
      * Whether to disable adaptive video bitrate. If true, use a fixed bitrate set to
-     * the maximum supported bitrate (5 Mbps). The default is false.
+     * 3 Mbps. The default is false.
      * This is an experimental feature.
      * This field is iOS-only. Ignored by Android and Unity simulator.
      */
     [Tooltip("Experimental and iOS-only. Ignored by Android and Unity simulator.")]
-    public bool disableAdaptiveVideoBitrate;
+    private bool disableAdaptiveVideoBitrate;
+    public bool DisableAdaptiveVideoBitrate {
+      get {
+        return disableAdaptiveVideoBitrate;
+      }
+    }
 
     private static readonly Dictionary<CastRemoteDisplayResolution, Vector2> resolutionMap =
       new Dictionary<CastRemoteDisplayResolution, Vector2> {

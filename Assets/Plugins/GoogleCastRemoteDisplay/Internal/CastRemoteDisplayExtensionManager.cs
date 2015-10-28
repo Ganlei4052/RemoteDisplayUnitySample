@@ -26,6 +26,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
     private bool isCasting = false;
 
     private List<CastDevice> castDevices = new List<CastDevice>();
+    private CastDevice connectedCastDevice = null;
     private CastError lastError = null;
     private ICastRemoteDisplayExtension castRemoteDisplayExtension = null;
 
@@ -120,15 +121,28 @@ namespace Google.Cast.RemoteDisplay.Internal {
     public void SelectCastDevice(string deviceId) {
       if (castRemoteDisplayExtension != null) {
         castRemoteDisplayExtension.SelectCastDevice(deviceId);
+        CacheSelectedDevice(deviceId);
       }
     }
 
     /**
-     * Returns the device ID of of the receiver device this sender is currently casting to.
+     * Caches the device that is being connected to, so we can track the device name and ID.
      */
-    public string GetSelectedCastDeviceId() {
-      if (castRemoteDisplayExtension != null) {
-        return castRemoteDisplayExtension.GetSelectedCastDeviceId();
+    private void CacheSelectedDevice(string deviceId) {
+      foreach (CastDevice listDevice in castDevices) {
+        if (listDevice.DeviceId == deviceId) {
+          connectedCastDevice = listDevice;
+          return;
+        }
+      }
+    }
+
+    /**
+     * Returns the CastDevice of the receiver device this sender is currently casting to.
+     */
+    public CastDevice GetSelectedCastDevice() {
+      if (connectedCastDevice != null) {
+        return connectedCastDevice;
       }
       return null;
     }
@@ -145,9 +159,10 @@ namespace Google.Cast.RemoteDisplay.Internal {
      * the user stop and disconnect and later select another Cast device.
      */
     public void StopRemoteDisplaySession() {
-      if (GetSelectedCastDeviceId() != null) {
+      if (connectedCastDevice.DeviceId != null) {
         DiscardGeneratedTexture();
         castRemoteDisplayExtension.StopRemoteDisplaySession();
+        connectedCastDevice = null;
       }
     }
 
@@ -204,6 +219,36 @@ namespace Google.Cast.RemoteDisplay.Internal {
     }
 
     /**
+     * Updates the current remote audio listener. We need to attach a component to the game object
+     * marked as the remote audio listener. It is possible to swap audio listeners at runtime.
+     * We disable the attached component on the object that is no longer active. Either parameter
+     * can be null.
+     */
+    public void UpdateAudioListener(AudioListener previouslistener, AudioListener newlistener) {
+      CastRemoteDisplayAudioInterceptor previousInterceptor =
+          previouslistener == null ? null :
+          previouslistener.GetComponent<CastRemoteDisplayAudioInterceptor>();
+      CastRemoteDisplayAudioInterceptor newInterceptor =
+          newlistener == null ? null :
+          newlistener.GetComponent<CastRemoteDisplayAudioInterceptor>();
+
+      // If we have a valid listener that doesn't have an interceptor yet, add it.
+      if (newInterceptor == null && newlistener != null) {
+        newInterceptor = newlistener.gameObject.AddComponent<CastRemoteDisplayAudioInterceptor>();
+      }
+
+      if (previousInterceptor != null && previousInterceptor != newInterceptor) {
+        previousInterceptor.enabled = false;
+      }
+
+      if (newInterceptor != null) {
+        newInterceptor.SetCastRemoteDisplayExtensionManager(this);
+        newInterceptor.enabled = true;
+      }
+    }
+
+
+    /**
      * Sets everything up and starts discovery on the native extension.
      */
     private void Activate() {
@@ -222,10 +267,6 @@ namespace Google.Cast.RemoteDisplay.Internal {
       if (CastRemoteDisplayManager.Configuration == null) {
         Debug.LogError("FATAL: CastRemoteDisplayManager has null configuration");
         return;
-      }
-
-      if (CastRemoteDisplayManager.RemoteAudioListener != null) {
-        CastRemoteDisplayManager.RemoteAudioListener.setCastRemoteDisplayExtensionManager(this);
       }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -258,7 +299,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
      */
     private void Deactivate() {
       Debug.Log("Deactivating Cast Remote Display.");
-      if (GetSelectedCastDeviceId() != null) {
+      if (connectedCastDevice.DeviceId != null) {
         StopRemoteDisplaySession();
       }
 
@@ -313,7 +354,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
     public void _callback_OnCastError(string rawErrorString) {
       string errorString = extractErrorString(rawErrorString);
       CastErrorCode errorCode = extractErrorCode(rawErrorString);
-      lastError = new CastError { errorCode = errorCode, message = errorString };
+      lastError = new CastError(errorCode, errorString);
       isCasting = false;
       onErrorCallback();
     }
@@ -349,7 +390,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
     private void UpdateCastDevicesFromNativeCode() {
       castDevices.Clear();
       if (castRemoteDisplayExtension != null) {
-        castDevices = castRemoteDisplayExtension.GetCastDevices();
+        castDevices = castRemoteDisplayExtension.GetCastDevices(ref this.connectedCastDevice);
       } else {
         Debug.Log("Can't update the list of cast devices because there is no extension object.");
       }

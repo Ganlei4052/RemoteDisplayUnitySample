@@ -9,7 +9,6 @@ namespace Google.Cast.RemoteDisplay.Internal {
   public class CastRemoteDisplayUnityExtension : ICastRemoteDisplayExtension {
     private CastRemoteDisplayExtensionManager extensionManager;
     private CastRemoteDisplaySimulator displaySimulator;
-    private string selectedDevice;
     private Texture remoteDisplayTexture;
     private Texture2D screenTexture;
     private Material material;
@@ -34,7 +33,8 @@ namespace Google.Cast.RemoteDisplay.Internal {
     }
 
     public void RenderFrame() {
-      if (GetSelectedCastDeviceId() != null && GetSelectedCastDeviceId().Length != 0
+      if (this.extensionManager.GetSelectedCastDevice().DeviceId != null
+        && this.extensionManager.GetSelectedCastDevice().DeviceId.Length != 0
         && remoteDisplayTexture != null && displaySimulator.simulateRemoteDisplay
         && material != null) {
         Rect rect = new Rect(Screen.width * displaySimulator.remoteDisplayRect.xMin,
@@ -71,13 +71,18 @@ namespace Google.Cast.RemoteDisplay.Internal {
     public void OnRemoteDisplaySessionStop() {
     }
 
-    public List<CastDevice> GetCastDevices() {
+    public List<CastDevice> GetCastDevices(ref CastDevice connectedCastDevice) {
+      foreach (CastDevice castDevice in displaySimulator.castDevices) {
+        if (connectedCastDevice != null &&
+            castDevice.DeviceId == connectedCastDevice.DeviceId) {
+          connectedCastDevice = castDevice;
+        }
+      }
       return new List<CastDevice>(displaySimulator.castDevices);
     }
 
     public void SelectCastDevice(string deviceId) {
-      selectedDevice = deviceId;
-      extensionManager._callback_OnRemoteDisplaySessionStart(selectedDevice);
+      extensionManager._callback_OnRemoteDisplaySessionStart(deviceId);
     }
 
     public void SetRemoteDisplayTexture(Texture texture) {
@@ -85,12 +90,8 @@ namespace Google.Cast.RemoteDisplay.Internal {
     }
 
     public void StopRemoteDisplaySession() {
-      selectedDevice = null;
-      extensionManager._callback_OnRemoteDisplaySessionEnd(selectedDevice);
-    }
-
-    public string GetSelectedCastDeviceId() {
-      return selectedDevice;
+      string deviceId = this.extensionManager.GetSelectedCastDevice().DeviceId;
+      extensionManager._callback_OnRemoteDisplaySessionEnd(deviceId);
     }
   }
 }

@@ -43,7 +43,7 @@ public class RemoteCameraManager : MonoBehaviour {
     displayManager.RemoteDisplaySessionStartEvent.AddListener(OnRemoteDisplaySessionStart);
     displayManager.RemoteDisplaySessionEndEvent.AddListener(OnRemoteDisplaySessionEnd);
     displayManager.RemoteDisplayErrorEvent.AddListener(OnRemoteDisplayError);
-    if (displayManager.GetSelectedCastDeviceId() != null) {
+    if (displayManager.IsCasting()) {
       RemoteDisplayCamera.enabled = true;
       displayManager.RemoteDisplayCamera = MainCamera;
     }

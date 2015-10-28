@@ -27,9 +27,8 @@ namespace Google.Cast.RemoteDisplay.Internal {
       manager.RemoteDisplayPausedTexture = (Texture) EditorGUILayout.ObjectField(
           "Remote Display Paused Texture", manager.RemoteDisplayPausedTexture, typeof(Texture),
           true);
-      manager.RemoteAudioListener = (CastRemoteDisplayAudioListener) EditorGUILayout.ObjectField(
-          "Remote Audio Listener", manager.RemoteAudioListener,
-          typeof(CastRemoteDisplayAudioListener), true);
+      manager.RemoteAudioListener = (AudioListener) EditorGUILayout.ObjectField(
+          "Remote Audio Listener", manager.RemoteAudioListener, typeof(AudioListener), true);
 
       EditorGUILayout.Space();
       EditorGUILayout.Space();

@@ -30,7 +30,6 @@ namespace Google.Cast.RemoteDisplay.Internal {
     private static int MAX_NUMBER_OF_JNI_CALLS_FOR_CAST_DEVICES = 10;
 
     private CastRemoteDisplayExtensionManager extensionManager;
-    private string selectedCastDeviceId = null;
 
     private AndroidJavaClass bridge;
 
@@ -84,10 +83,9 @@ namespace Google.Cast.RemoteDisplay.Internal {
     }
 
     public void OnRemoteDisplaySessionStop() {
-      selectedCastDeviceId = null;
     }
 
-    public List<CastDevice> GetCastDevices() {
+    public List<CastDevice> GetCastDevices(ref CastDevice connectedCastDevice) {
       List<CastDevice> devices = new List<CastDevice>();
       using (AndroidJavaClass bridge = new AndroidJavaClass(ANDROID_BRIDGE_CLASS_NAME)) {
 
@@ -107,11 +105,15 @@ namespace Google.Cast.RemoteDisplay.Internal {
               statusString = deviceInfoStrings[0];
               int i = 1;
               while (i < deviceInfoStrings.Length - 2) {
-                CastDevice device = new CastDevice();
-                device.deviceId = deviceInfoStrings[i++];
-                device.deviceName = deviceInfoStrings[i++];
-                device.status = deviceInfoStrings[i++];
+                // Creates a CastDevice with ID, Name, and Status.
+                CastDevice device = new CastDevice(deviceInfoStrings[i++],
+                    deviceInfoStrings[i++],
+                    deviceInfoStrings[i++]);
                 devices.Add(device);
+                if (connectedCastDevice != null &&
+                    connectedCastDevice.DeviceId == device.DeviceId) {
+                  connectedCastDevice = device;
+                }
               }
             } else {
               Debug.LogError("Couldn't retrieve list of Cast Devices.");
@@ -134,7 +136,6 @@ namespace Google.Cast.RemoteDisplay.Internal {
     public void SelectCastDevice(string deviceId) {
       if (bridge != null) {
         bridge.CallStatic(NATIVE_SELECT_CAST_DEVICE, deviceId);
-        selectedCastDeviceId = deviceId;
       }
     }
 
@@ -142,11 +143,6 @@ namespace Google.Cast.RemoteDisplay.Internal {
       if (bridge != null) {
         bridge.CallStatic(NATIVE_STOP_REMOTE_DISPLAY_SESSION);
       }
-      selectedCastDeviceId = null;
-    }
-
-    public string GetSelectedCastDeviceId() {
-      return selectedCastDeviceId;
     }
   }
 }

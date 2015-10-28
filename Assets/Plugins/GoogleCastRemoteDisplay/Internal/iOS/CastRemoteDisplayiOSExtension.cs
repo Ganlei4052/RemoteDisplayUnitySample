@@ -14,7 +14,6 @@ namespace Google.Cast.RemoteDisplay.Internal {
    */
   public class CastRemoteDisplayiOSExtension : ICastRemoteDisplayExtension {
     private CastRemoteDisplayExtensionManager extensionManager;
-    private string selectedCastDeviceId;
 
     public CastRemoteDisplayiOSExtension(CastRemoteDisplayExtensionManager extensionManager) {
       this.extensionManager = extensionManager;
@@ -78,18 +77,15 @@ namespace Google.Cast.RemoteDisplay.Internal {
     }
 
     public void OnRemoteDisplaySessionStop() {
-      selectedCastDeviceId = null;
     }
 
-    public List<CastDevice> GetCastDevices() {
-      return CastRemoteDisplayiOSUnityBridge.GetCastDevices();
+    public List<CastDevice> GetCastDevices(ref CastDevice connectedCastDevice) {
+      return CastRemoteDisplayiOSUnityBridge.GetCastDevices(ref connectedCastDevice);
     }
 
     public void SelectCastDevice(string deviceId) {
-      if (CastRemoteDisplayiOSUnityBridge.SelectCastDevice(deviceId,
-            extensionManager.CastRemoteDisplayManager.Configuration)) {
-        selectedCastDeviceId = deviceId;
-      }
+      CastRemoteDisplayiOSUnityBridge.SelectCastDevice(deviceId,
+          extensionManager.CastRemoteDisplayManager.Configuration);
     }
 
     public void SetRemoteDisplayTexture(Texture texture) {
@@ -103,10 +99,6 @@ namespace Google.Cast.RemoteDisplay.Internal {
 
     public void StopRemoteDisplaySession() {
       CastRemoteDisplayiOSUnityBridge.StopRemoteDisplaySession();
-    }
-
-    public string GetSelectedCastDeviceId() {
-      return selectedCastDeviceId;
     }
   }
 }

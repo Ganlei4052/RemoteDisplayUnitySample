@@ -27,7 +27,7 @@ namespace Google.Cast.RemoteDisplay.UI {
      * pressed.
      */
     public void SetError(CastError error) {
-      statusLabel.text = "Error " + error.errorCode + " - " + error.message;
+      statusLabel.text = "Error " + error.ErrorCode + " - " + error.Message;
     }
 
     /**

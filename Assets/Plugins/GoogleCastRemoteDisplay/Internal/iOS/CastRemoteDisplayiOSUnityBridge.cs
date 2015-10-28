@@ -86,10 +86,10 @@ namespace Google.Cast.RemoteDisplay.Internal {
      */
     public static bool SelectCastDevice(string deviceID, CastRemoteDisplayConfiguration config) {
       RemoteDisplayConfigStruct remoteDisplayConfigStruct;
-      remoteDisplayConfigStruct.frameRate = Convert.ToInt32(config.frameRate);
-      remoteDisplayConfigStruct.resolution = Convert.ToInt32(config.resolution);
-      remoteDisplayConfigStruct.targetDelay = Convert.ToInt32(config.targetDelay);
-      remoteDisplayConfigStruct.disableAdaptiveVideoBitrate = config.disableAdaptiveVideoBitrate;
+      remoteDisplayConfigStruct.frameRate = Convert.ToInt32(config.FrameRate);
+      remoteDisplayConfigStruct.resolution = Convert.ToInt32(config.Resolution);
+      remoteDisplayConfigStruct.targetDelay = Convert.ToInt32(config.TargetDelay);
+      remoteDisplayConfigStruct.disableAdaptiveVideoBitrate = config.DisableAdaptiveVideoBitrate;
       return _native_GCKUnitySelectCastDevice(deviceID, remoteDisplayConfigStruct);
     }
 
@@ -97,7 +97,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
      * Returns devices available to start a remote display session with. Assumes #StartScan was
      * called.
      */
-    public static List<CastDevice> GetCastDevices() {
+    public static List<CastDevice> GetCastDevices(ref CastDevice connectedCastDevice) {
       // Retrieve string array pointer, copy to C# managed string array, and then free pointer.
       IntPtr deviceInfoStringArrayPtr = _native_GCKUnityGetCastDeviceInfoAsStringArrayPtr();
       string[] deviceInfoStrings = getStringArrayFromNativePointer(deviceInfoStringArrayPtr);
@@ -108,11 +108,15 @@ namespace Google.Cast.RemoteDisplay.Internal {
       List<CastDevice> devices = new List<CastDevice>();
       int i = 0;
       while (i < deviceInfoStrings.Length - 2) {
-        CastDevice device = new CastDevice();
-        device.deviceId = deviceInfoStrings[i++];
-        device.deviceName = deviceInfoStrings[i++];
-        device.status = deviceInfoStrings[i++];
+        // Creates a CastDevice with ID, Name, and Status.
+        CastDevice device = new CastDevice(deviceInfoStrings[i++],
+            deviceInfoStrings[i++],
+            deviceInfoStrings[i++]);
         devices.Add(device);
+        if (connectedCastDevice != null &&
+            connectedCastDevice.DeviceId == device.DeviceId) {
+          connectedCastDevice = device;
+        }
       }
       return devices;
     }

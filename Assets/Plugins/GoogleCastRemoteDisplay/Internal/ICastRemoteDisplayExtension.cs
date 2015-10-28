@@ -20,14 +20,12 @@ namespace Google.Cast.RemoteDisplay.Internal {
 
     void OnRemoteDisplaySessionStop();
 
-    List<CastDevice> GetCastDevices();
+    List<CastDevice> GetCastDevices(ref CastDevice connectedCastDevice);
 
     void SelectCastDevice(string deviceId);
 
     void SetRemoteDisplayTexture(Texture texture);
 
     void StopRemoteDisplaySession();
-
-    string GetSelectedCastDeviceId();
   }
 }

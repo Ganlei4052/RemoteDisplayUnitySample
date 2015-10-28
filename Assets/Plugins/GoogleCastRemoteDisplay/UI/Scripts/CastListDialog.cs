@@ -115,13 +115,13 @@ namespace Google.Cast.RemoteDisplay.UI {
       }
       currentButtons.Clear();
 
-      List<CastDevice> devices = manager.GetCastDevices();
+      IList<CastDevice> devices = manager.GetCastDevices();
       foreach (CastDevice listDevice in devices) {
         GameObject newButton = Instantiate(listElementPrefab) as GameObject;
         CastListButton button = newButton.GetComponent<CastListButton>();
-        button.nameLabel.text = listDevice.deviceName;
-        button.statusLabel.text = listDevice.status;
-        string deviceId = listDevice.deviceId;
+        button.nameLabel.text = listDevice.DeviceName;
+        button.statusLabel.text = listDevice.Status;
+        string deviceId = listDevice.DeviceId;
         button.button.onClick.AddListener(() => {
           manager.SelectCastDevice(deviceId);
           castButtonFrame.ShowConnecting();
