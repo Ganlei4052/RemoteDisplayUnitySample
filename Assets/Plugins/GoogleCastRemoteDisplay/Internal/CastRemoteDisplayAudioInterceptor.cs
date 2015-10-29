@@ -1,3 +1,5 @@
+// Copyright 2015 Google Inc.
+
 using UnityEngine;
 
 namespace Google.Cast.RemoteDisplay.Internal {

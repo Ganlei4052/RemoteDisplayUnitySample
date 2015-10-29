@@ -1,3 +1,5 @@
+// Copyright 2015 Google Inc.
+
 using Google.Cast.RemoteDisplay.Internal;
 using UnityEngine;
 

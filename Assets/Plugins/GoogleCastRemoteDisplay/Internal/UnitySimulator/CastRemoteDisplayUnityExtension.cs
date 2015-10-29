@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿// Copyright 2015 Google Inc.
+
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
