@@ -73,6 +73,11 @@ namespace UnityStandardAssets.CrossPlatformInput
     Vector2 downPos = new Vector2(0, 0);
 
     /**
+     * Ring position.
+     */
+    Vector2 ringPos = new Vector2(0, 0);
+
+    /**
      * Diff between down and current touch positions.
      */
     Vector2 currentToDownPos = new Vector2(0, 0);
@@ -161,6 +166,7 @@ namespace UnityStandardAssets.CrossPlatformInput
       center = data.position;
       #endif
       downPos = data.position;
+      ringPos = downPos;
     }
 
     /**
@@ -219,13 +225,15 @@ namespace UnityStandardAssets.CrossPlatformInput
         return;
       }
 
-      // Draw the outer ring.
-      GUI.DrawTexture(new Rect(downPos.x - ringRadius, Screen.height - downPos.y - ringRadius,
-                                 ringRadius * 2, ringRadius * 2), ringTexture, ScaleMode.ScaleToFit, true);
-
-      // Limit the joystick to inside the ring.
+      // Make the outer ring follow the joystick movements.
       currentToDownPos = downPos - currentPos;
-      currentPos = downPos + Vector2.ClampMagnitude(currentToDownPos, ringRadius-joystickRadius);
+      if (currentToDownPos.magnitude > ringRadius/2) {
+        ringPos = currentPos + Vector2.ClampMagnitude(currentToDownPos, ringRadius/2);
+      }
+
+      // Draw the outer ring.
+      GUI.DrawTexture(new Rect(ringPos.x - ringRadius, Screen.height - ringPos.y - ringRadius,
+                                 ringRadius * 2, ringRadius * 2), ringTexture, ScaleMode.ScaleToFit, true);
 
       // Draw the joystick.
       GUI.DrawTexture(new Rect(currentPos.x - joystickRadius, Screen.height - currentPos.y -
