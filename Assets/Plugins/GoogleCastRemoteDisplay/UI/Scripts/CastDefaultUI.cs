@@ -254,6 +254,10 @@ namespace Google.Cast.RemoteDisplay.UI {
       HideAll();
       darkMask.SetActive(true);
       if (isCasting) {
+        CastDevice selectedDevice = CastRemoteDisplayManager.GetInstance().GetSelectedCastDevice();
+        if (selectedDevice != null) {
+          castDisconnectDialog.SetDeviceName(selectedDevice.DeviceName);
+        }
         castDisconnectDialog.gameObject.SetActive(true);
       } else {
         CastError error = CastRemoteDisplayManager.GetInstance().GetLastError();
@@ -289,7 +293,7 @@ namespace Google.Cast.RemoteDisplay.UI {
     public void OnConfirmLearnMore() {
       HideAll();
       castButtonFrame.ShowNotCasting();
-      Application.OpenURL("http://google.com/cast");
+      Application.OpenURL("http://www.chromecast.com/tv");
     }
 
     /**
