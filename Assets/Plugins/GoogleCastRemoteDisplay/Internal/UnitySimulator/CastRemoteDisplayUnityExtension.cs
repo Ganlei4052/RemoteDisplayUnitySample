@@ -1,7 +1,6 @@
 ﻿// Copyright 2015 Google Inc.
 
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Google.Cast.RemoteDisplay.Internal {
@@ -35,14 +34,14 @@ namespace Google.Cast.RemoteDisplay.Internal {
     }
 
     public void RenderFrame() {
-      if (this.extensionManager.GetSelectedCastDevice().DeviceId != null
-        && this.extensionManager.GetSelectedCastDevice().DeviceId.Length != 0
-        && remoteDisplayTexture != null && displaySimulator.simulateRemoteDisplay
-        && material != null) {
+      if (extensionManager.IsCasting()
+          && remoteDisplayTexture != null
+          && displaySimulator.simulateRemoteDisplay
+          && material != null) {
         Rect rect = new Rect(Screen.width * displaySimulator.remoteDisplayRect.xMin,
-                             Screen.height * displaySimulator.remoteDisplayRect.yMin,
-                             Screen.width * displaySimulator.remoteDisplayRect.width,
-                             Screen.height * displaySimulator.remoteDisplayRect.height);
+            Screen.height * displaySimulator.remoteDisplayRect.yMin,
+            Screen.width * displaySimulator.remoteDisplayRect.width,
+            Screen.height * displaySimulator.remoteDisplayRect.height);
 
         Graphics.SetRenderTarget(null); // Main display.
         GL.PushMatrix();
@@ -53,9 +52,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
     }
 
     public void UpdateDevices() {
-      if (displaySimulator.castDevices.Count > 0) {
-        extensionManager._callback_OnCastDevicesUpdated("dummy");
-      }
+      extensionManager._callback_OnCastDevicesUpdated("dummy");
     }
 
     public void ThrowError(CastErrorCode errorCode) {
@@ -92,8 +89,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
     }
 
     public void StopRemoteDisplaySession() {
-      string deviceId = this.extensionManager.GetSelectedCastDevice().DeviceId;
-      extensionManager._callback_OnRemoteDisplaySessionEnd(deviceId);
+      extensionManager._callback_OnRemoteDisplaySessionEnd("dummy");
     }
   }
 }

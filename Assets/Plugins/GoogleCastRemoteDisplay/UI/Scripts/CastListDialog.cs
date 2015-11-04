@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -10,6 +11,18 @@ namespace Google.Cast.RemoteDisplay.UI {
 
     private const int SEARCH_TIMEOUT_SECONDS = 5;
     private delegate void Action();
+
+    /**
+     * Outlet for the title field.
+     */
+    [Tooltip("Default: Title")]
+    public Text titleText;
+
+    /**
+     * Outlet for the "Searching/Connecting" text.
+     */
+    [Tooltip("Default: StatusText")]
+    public Text statusText;
 
     /**
      * Prefab for the cast list elements.
@@ -66,7 +79,13 @@ namespace Google.Cast.RemoteDisplay.UI {
      */
     public void Show() {
       gameObject.SetActive(true);
+      ResetDialog();
+    }
+
+    private void ResetDialog() {
+      titleText.text = "Cast To";
       if (currentButtons.Count == 0) {
+        statusText.text = "Finding Devices";
         searchingElements.SetActive(true);
         listNotFoundElements.SetActive(false);
         listFoundElements.SetActive(false);
@@ -98,8 +117,20 @@ namespace Google.Cast.RemoteDisplay.UI {
     /**
      * Shows the dialog when no devices have been found.
      */
+    private void ShowConnectingState() {
+      titleText.text = "";
+      statusText.text = "Connecting";
+      searchingElements.SetActive(true);
+      listNotFoundElements.SetActive(false);
+      listFoundElements.SetActive(false);
+    }
+
+    /**
+     * Shows the dialog when no devices have been found.
+     */
     private void ShowNotFoundState() {
       if (gameObject.activeInHierarchy && currentButtons.Count == 0) {
+        titleText.text = "No Device Found";
         searchingElements.SetActive(false);
         listNotFoundElements.SetActive(true);
         listFoundElements.SetActive(false);
@@ -125,14 +156,13 @@ namespace Google.Cast.RemoteDisplay.UI {
         button.button.onClick.AddListener(() => {
           manager.SelectCastDevice(deviceId);
           castButtonFrame.ShowConnecting();
+          this.ShowConnectingState();
         });
         newButton.transform.SetParent(contentPanel.transform, false);
         currentButtons.Add(newButton);
       }
 
-      searchingElements.SetActive(false);
-      listNotFoundElements.SetActive(false);
-      listFoundElements.SetActive(true);
+      ResetDialog();
     }
 
     /**

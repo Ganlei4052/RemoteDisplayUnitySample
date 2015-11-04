@@ -15,6 +15,11 @@ namespace Google.Cast.RemoteDisplay.UI {
     public Button okayButton;
 
     /**
+     * Outlet for the title label to display errors.
+     */
+    public Text titleLabel;
+
+    /**
      * Outlet for the status label to display errors.
      */
     public Text statusLabel;
@@ -29,7 +34,8 @@ namespace Google.Cast.RemoteDisplay.UI {
      * pressed.
      */
     public void SetError(CastError error) {
-      statusLabel.text = "Error " + error.ErrorCode + " - " + error.Message;
+      titleLabel.text = error.ReadableErrorTitle;
+      statusLabel.text = error.ReadableErrorBody;
     }
 
     /**

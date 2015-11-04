@@ -56,6 +56,10 @@ namespace Google.Cast.RemoteDisplay {
         return remoteDisplayCamera;
       }
       set {
+        // Needed because the unity editor can call this multiple times.
+        if (value == remoteDisplayCamera) {
+          return;
+        }
         remoteDisplayCamera = value;
         if (extensionManager != null) {
           // Must be called after the new value has been set.
@@ -71,8 +75,13 @@ namespace Google.Cast.RemoteDisplay {
         return remoteDisplayTexture;
       }
       set {
+        // Needed because the unity editor can call this multiple times.
+        if (value == remoteDisplayTexture) {
+          return;
+        }
         remoteDisplayTexture = value;
         if (extensionManager != null) {
+          // Must be called after the new value has been set.
           extensionManager.UpdateRemoteDisplayTexture();
         }
       }
@@ -443,6 +452,37 @@ namespace Google.Cast.RemoteDisplay {
     public string Message {
       get {
         return message;
+      }
+    }
+
+    public string ReadableErrorTitle {
+      get {
+        switch (errorCode) {
+          case CastErrorCode.RemoteDisplayUnsupported:
+            return "Remote Display Unsupported";
+          case CastErrorCode.GooglePlayServicesUpdateRequired:
+            return "Play Services Update Required";
+          case CastErrorCode.RemoteDisplayConfigurationRejected:
+            return "Remote Display Config Rejected";
+          default:
+            return "Unknown Error";
+        }
+      }
+    }
+
+    public string ReadableErrorBody {
+      get {
+        switch (errorCode) {
+          case CastErrorCode.RemoteDisplayUnsupported:
+            return "Your mobile device is not supported for this game. Please play using any of " +
+                "the following:\n\nAndroid 4.4+\niOS 8+ and (iPad Mini 2+, iPad 3+, iPhone 5+)";
+          case CastErrorCode.GooglePlayServicesUpdateRequired:
+            return "Google Play Services requires an update.";
+          case CastErrorCode.RemoteDisplayConfigurationRejected:
+            return "Remote display configuration rejected by Cast device.";
+          default:
+            return "Unknown Error";
+        }
       }
     }
 

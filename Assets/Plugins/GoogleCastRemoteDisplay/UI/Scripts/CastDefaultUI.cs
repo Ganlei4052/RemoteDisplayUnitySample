@@ -168,6 +168,7 @@ namespace Google.Cast.RemoteDisplay.UI {
         castListDialog.CastButtonFrame = castButtonFrame;
 
         HideAll();
+        castListDialog.PopulateList(manager);
         castButtonFrame.Show();
       }
     }

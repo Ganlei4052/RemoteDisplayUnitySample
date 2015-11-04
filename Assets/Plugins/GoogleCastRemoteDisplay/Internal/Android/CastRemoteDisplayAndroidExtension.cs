@@ -46,7 +46,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
         bridge.CallStatic(NATIVE_START_SCAN, extensionManager.CastRemoteDisplayManager.CastAppId,
             extensionManager.name);
       } else {
-        Debug.LogError("Couldn't not initialize the Android Remote Display native library. " +
+        Debug.LogError("Couldn't initialize the Android Remote Display native library. " +
             "Couldn't not find class " + ANDROID_BRIDGE_CLASS_NAME);
       }
     }

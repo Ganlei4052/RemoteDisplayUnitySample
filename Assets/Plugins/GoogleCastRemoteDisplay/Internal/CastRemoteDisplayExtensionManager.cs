@@ -83,7 +83,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
      */
     void OnApplicationPause(bool paused) {
       isApplicationPaused = paused;
-      DiscardGeneratedTexture();
+      DiscardGeneratedTextureIfNeeded();
       UpdateRemoteDisplayTexture();
     }
 
@@ -159,10 +159,11 @@ namespace Google.Cast.RemoteDisplay.Internal {
      * the user stop and disconnect and later select another Cast device.
      */
     public void StopRemoteDisplaySession() {
-      if (connectedCastDevice.DeviceId != null) {
-        DiscardGeneratedTexture();
+      DiscardGeneratedTextureIfNeeded();
+      connectedCastDevice = null;
+      isCasting = false;
+      if (castRemoteDisplayExtension != null) {
         castRemoteDisplayExtension.StopRemoteDisplaySession();
-        connectedCastDevice = null;
       }
     }
 
@@ -287,6 +288,9 @@ namespace Google.Cast.RemoteDisplay.Internal {
         // Non iOS platforms can render using RenderRemoteDisplayCoroutine.
         StartCoroutine(RenderRemoteDisplayCoroutine());
 #endif
+        // Update the list of cast devices in case we missed updates from the native lib while this
+        // object was deactivated.
+        UpdateCastDevicesFromNativeCode();
       } else {
         Debug.LogWarning("Disabling the CastRemoteDisplayManager because the platform is not " +
                        "Android or iOS, and no simulator is found.");
@@ -299,17 +303,16 @@ namespace Google.Cast.RemoteDisplay.Internal {
      */
     private void Deactivate() {
       Debug.Log("Deactivating Cast Remote Display.");
-      if (connectedCastDevice.DeviceId != null) {
-        StopRemoteDisplaySession();
-      }
-
-      DiscardGeneratedTexture();
+      connectedCastDevice = null;
+      isCasting = false;
+      StopRemoteDisplaySession();
+      DiscardGeneratedTextureIfNeeded();
 
       if (castRemoteDisplayExtension != null) {
         castRemoteDisplayExtension.Deactivate();
       }
-      StopAllCoroutines();
       castRemoteDisplayExtension = null;
+      StopAllCoroutines();
       castDevices.Clear();
     }
 
@@ -396,7 +399,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
       }
     }
 
-    private void DiscardGeneratedTexture() {
+    private void DiscardGeneratedTextureIfNeeded() {
       var manager = CastRemoteDisplayManager;
       if (manager.RemoteDisplayCamera != null) {
         manager.RemoteDisplayCamera.enabled = false;
