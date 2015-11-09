@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-
 namespace CompleteProject
 {
   public class UIController : MonoBehaviour {
@@ -11,6 +10,8 @@ namespace CompleteProject
     public GameObject pauseButton;
     public GameObject pausePanel;
     public GameObject joysticks;
+    public ControllerCanvasManager controllerCanvas;
+    public ReceiverCanvasManager receiverCanvas;
 
     private GameObject castUIController;
     private bool gameOver = false;
@@ -32,6 +33,7 @@ namespace CompleteProject
       Time.timeScale = 1f;
       mainMenu.SetActive(false);
       castUIController.SetActive(false);
+      receiverCanvas.StartGame();
     }
 
     public void PauseGame() {
@@ -39,6 +41,7 @@ namespace CompleteProject
       pausePanel.SetActive(true);
       castUIController.SetActive(true);
       Time.timeScale = 0f;
+      receiverCanvas.PauseGame();
     }
 
     public void UnpauseGame() {
@@ -46,11 +49,13 @@ namespace CompleteProject
       pausePanel.SetActive(false);
       castUIController.SetActive(false);
       Time.timeScale = 1f;
+      receiverCanvas.UnpauseGame();
     }
 
     public void EndGame() {
       pauseButton.SetActive(false);
       joysticks.SetActive(false);
+      receiverCanvas.EndGame();
     }
 
     public void RestartLevel() {
