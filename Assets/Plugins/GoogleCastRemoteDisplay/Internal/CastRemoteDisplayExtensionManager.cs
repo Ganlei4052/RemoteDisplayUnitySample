@@ -284,7 +284,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
 
       if (castRemoteDisplayExtension != null) {
         castRemoteDisplayExtension.Activate();
-#if !UNITY_IOS
+#if !UNITY_IOS && !UNITY_EDITOR
         // Non iOS platforms can render using RenderRemoteDisplayCoroutine.
         StartCoroutine(RenderRemoteDisplayCoroutine());
 #endif
@@ -421,13 +421,24 @@ namespace Google.Cast.RemoteDisplay.Internal {
       }
     }
 
-#if UNITY_IOS
+
+#if UNITY_EDITOR
     /**
-     * iOS Metal graphics API will only render in Update()..
+     * The Unity simulator must render in OnGUI in order to output the simulated output to the
+     *  screen.
+     */
+    public void OnGUI() {
+      MaybeRenderFrame();
+    }
+
+#elif UNITY_IOS
+    /**
+     * iOS Metal graphics API will only render in Update().
      */
     private void Update() {
       MaybeRenderFrame();
     }
+
 #else
     /**
      * Coroutine that will call render on the native plugin at the end of every frame.

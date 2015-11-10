@@ -43,11 +43,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
             Screen.width * displaySimulator.remoteDisplayRect.width,
             Screen.height * displaySimulator.remoteDisplayRect.height);
 
-        Graphics.SetRenderTarget(null); // Main display.
-        GL.PushMatrix();
-        GL.LoadPixelMatrix(0, Screen.width, Screen.height, 0); // Flip Y axis.
-        Graphics.DrawTexture(rect, remoteDisplayTexture, material);
-        GL.PopMatrix();
+        GUI.DrawTexture(rect, remoteDisplayTexture, ScaleMode.ScaleToFit, false);
       }
     }
 
