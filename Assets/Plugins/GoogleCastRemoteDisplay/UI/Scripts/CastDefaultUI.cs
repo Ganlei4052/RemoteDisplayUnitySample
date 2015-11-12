@@ -88,21 +88,20 @@ namespace Google.Cast.RemoteDisplay.UI {
      */
     private bool isCasting = false;
 
-
     /**
-     * There should only be one CastDefaultUI at a time - this allows easy programatic calling of
-     *  public functionality.
+     * Returns CastDefaultUI singleton. There should only be one CastDefaultUI at a time - this
+     * allows easy programatic calling of public functionality.
      */
-    private static CastDefaultUI instance = null;
     public static CastDefaultUI GetInstance() {
       return instance;
     }
+    private static CastDefaultUI instance = null;
 
     /**
      * If a default UI already exists, destroy the new one.
      */
     void Awake() {
-      if (instance) {
+      if (instance && instance != this) {
         Debug.LogWarning("CastDefaultUI: Duplicate UI controller found - destroying.");
         DestroyImmediate(gameObject);
         return;
@@ -179,7 +178,6 @@ namespace Google.Cast.RemoteDisplay.UI {
     public void Uninitialize() {
       CastRemoteDisplayManager manager = CastRemoteDisplayManager.GetInstance();
       if (isInitialized && manager) {
-        instance = null;
         manager.CastDevicesUpdatedEvent.RemoveListener(OnCastDevicesUpdated);
         manager.RemoteDisplaySessionStartEvent.RemoveListener(OnRemoteDisplaySessionStart);
         manager.RemoteDisplaySessionEndEvent.RemoveListener(OnRemoteDisplaySessionEnd);

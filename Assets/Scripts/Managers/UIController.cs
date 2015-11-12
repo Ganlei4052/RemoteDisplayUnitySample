@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+using Google.Cast.RemoteDisplay.UI;
+
 namespace CompleteProject
 {
   public class UIController : MonoBehaviour {
@@ -18,7 +20,7 @@ namespace CompleteProject
 
     public void Start () {
       Time.timeScale = 0f;
-      castUIController = GameObject.Find("CastDefaultUI");
+      castUIController = CastDefaultUI.GetInstance().gameObject;
       pausePanel.SetActive(false);
     }
 
