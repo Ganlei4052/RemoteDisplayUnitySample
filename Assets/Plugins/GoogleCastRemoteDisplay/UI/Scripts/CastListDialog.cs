@@ -65,14 +65,19 @@ namespace Google.Cast.RemoteDisplay.UI {
     private List<GameObject> currentButtons = new List<GameObject>();
 
     /**
+     * Tracks whether the game is currently casting, to maintain state.
+     */
+    private bool connecting = false;
+
+    /**
      * A reference to the cast button for animating the icon.
      */
-    private CastButtonFrame castButtonFrame;
     public CastButtonFrame CastButtonFrame {
       set {
         castButtonFrame = value;
       }
     }
+    private CastButtonFrame castButtonFrame;
 
     /**
      * Shows the list of cast devices, or shows the "searching for cast devices" state.
@@ -111,6 +116,7 @@ namespace Google.Cast.RemoteDisplay.UI {
      * Hides the list of cast devices.
      */
     public void Hide() {
+      connecting = false;
       gameObject.SetActive(false);
     }
 
@@ -123,6 +129,7 @@ namespace Google.Cast.RemoteDisplay.UI {
       searchingElements.SetActive(true);
       listNotFoundElements.SetActive(false);
       listFoundElements.SetActive(false);
+      connecting = true;
     }
 
     /**
@@ -162,7 +169,9 @@ namespace Google.Cast.RemoteDisplay.UI {
         currentButtons.Add(newButton);
       }
 
-      ResetDialog();
+      if (!connecting) {
+        ResetDialog();
+      }
     }
 
     /**
