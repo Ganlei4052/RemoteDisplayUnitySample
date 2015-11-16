@@ -229,6 +229,7 @@ namespace UnityStandardAssets.CrossPlatformInput
       currentToDownPos = downPos - currentPos;
       if (currentToDownPos.magnitude > ringRadius/2) {
         ringPos = currentPos + Vector2.ClampMagnitude(currentToDownPos, ringRadius/2);
+        downPos = ringPos;
       }
 
       // Draw the outer ring.
