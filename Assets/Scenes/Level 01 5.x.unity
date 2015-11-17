@@ -2789,7 +2789,7 @@ Light:
   serializedVersion: 6
   m_Type: 1
   m_Color: {r: .764908791, g: .720588207, b: 1, a: 1}
-  m_Intensity: .5
+  m_Intensity: .600000024
   m_Range: 10
   m_SpotAngle: 30
   m_CookieSize: 10
@@ -6446,7 +6446,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   backgroundImage: {fileID: 1437709622}
-  playOnTvButton: {fileID: 2111547850}
 --- !u!114 &1145408298
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8120,10 +8119,6 @@ Prefab:
       propertyPath: damageImage
       value: 
       objectReference: {fileID: 1578681177}
-    - target: {fileID: 10800002, guid: 4e5a0d387dc27394b81600988ad0216f, type: 2}
-      propertyPath: m_BounceIntensity
-      value: .5
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 4e5a0d387dc27394b81600988ad0216f, type: 2}
   m_IsPrefabParent: 0
@@ -9625,6 +9620,14 @@ Prefab:
       propertyPath: configuration.frameRate
       value: 30
       objectReference: {fileID: 0}
+    - target: {fileID: 11467948, guid: dc8f90af760314e868c4d6f32515226c, type: 2}
+      propertyPath: remoteDisplayTexture
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 11467948, guid: dc8f90af760314e868c4d6f32515226c, type: 2}
+      propertyPath: remoteDisplayPausedTexture
+      value: 
+      objectReference: {fileID: 2800000, guid: 8a891e1dbbf0d40489d424c998f90aec, type: 3}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: dc8f90af760314e868c4d6f32515226c, type: 2}
   m_IsPrefabParent: 0
