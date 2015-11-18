@@ -10,13 +10,11 @@ namespace CompleteProject
         public GameObject gameOverButtonCanvas;
         public GameObject gameOverRemoteCanvas;
         public GameObject restartButton;
-        public GameObject quitButton;
 
         void Awake ()
         {
             // Set up the reference.
             restartButton.SetActive(false);
-            quitButton.SetActive(false);
         }
 
 
@@ -29,7 +27,6 @@ namespace CompleteProject
                 gameOverButtonCanvas.GetComponent<Canvas>().enabled = true;
                 gameOverButtonCanvas.GetComponent<Animator>().SetTrigger("GameOver");
                 restartButton.SetActive(true);
-                quitButton.SetActive(true);
                 if (CastRemoteDisplayManager.GetInstance().IsCasting()) {
                     gameOverRemoteCanvas.GetComponent<Animator>().SetTrigger("GameOver");
                 } else {

@@ -18,10 +18,15 @@ namespace CompleteProject
     private GameObject castUIController;
     private bool gameOver = false;
 
+    private static bool restarted = false;
+
     public void Start () {
       Time.timeScale = 0f;
       castUIController = CastDefaultUI.GetInstance().gameObject;
       pausePanel.SetActive(false);
+      if (restarted) {
+        StartGame();
+      }
     }
 
     public void Update() {
@@ -63,6 +68,7 @@ namespace CompleteProject
     public void RestartLevel() {
       // Reload the level that is currently loaded.
       castUIController.SetActive(true);
+      restarted = true;
       Application.LoadLevel (Application.loadedLevel);
     }
   }
