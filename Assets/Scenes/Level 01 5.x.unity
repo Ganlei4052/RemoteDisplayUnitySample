@@ -5835,7 +5835,7 @@ MonoBehaviour:
   errorDialog: {fileID: 1400608585}
   firstTimeCastDialog: {fileID: 835478576}
   castDisconnectDialog: {fileID: 573892145}
-  enableFirstTimeCastUI: 0
+  enableFirstTimeCastUI: 1
   castUISprites:
     casting: {fileID: 21300000, guid: 320e1b9f0139040e4880d303290f88e3, type: 3}
     notCasting: {fileID: 21300000, guid: 933cb90202b30448ab97c71e2bc806c9, type: 3}
@@ -6344,7 +6344,6 @@ MonoBehaviour:
   gameOverButtonCanvas: {fileID: 348879325}
   gameOverRemoteCanvas: {fileID: 858293545}
   restartButton: {fileID: 1665537617}
-  quitButton: {fileID: 0}
 --- !u!95 &1139190137
 Animator:
   serializedVersion: 3
