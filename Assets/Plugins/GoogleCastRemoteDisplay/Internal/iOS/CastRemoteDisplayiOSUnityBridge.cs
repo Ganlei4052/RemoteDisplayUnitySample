@@ -1,4 +1,18 @@
-// Copyright 2015 Google Inc.
+/*
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #if UNITY_IOS
 
@@ -24,6 +38,14 @@ namespace Google.Cast.RemoteDisplay.Internal {
       AVAudioPCMFormatInt16,
       AVAudioPCMFormatInt32
     }
+
+    /**
+     * The target delay is designed to be configurable, based on the CastRemoteDisplayTargetDelay
+     * enum in CastRemoteDisplayExtensionManager.cs.  We have pulled this ability for launch,
+     * pending further investigation in its value.  Until then, we will pass this const value
+     * to the underlying implementation to remove the enum from the public implementation.
+     */
+    private const CastRemoteDisplayTargetDelay targetDelay = CastRemoteDisplayTargetDelay.Normal;
 
     /**
      * Specifies the configuration for setting up a remote display session for a selected cast
@@ -88,7 +110,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
       RemoteDisplayConfigStruct remoteDisplayConfigStruct;
       remoteDisplayConfigStruct.frameRate = Convert.ToInt32(config.FrameRate);
       remoteDisplayConfigStruct.resolution = Convert.ToInt32(config.Resolution);
-      remoteDisplayConfigStruct.targetDelay = Convert.ToInt32(config.TargetDelay);
+      remoteDisplayConfigStruct.targetDelay = Convert.ToInt32(targetDelay);
       remoteDisplayConfigStruct.disableAdaptiveVideoBitrate = config.DisableAdaptiveVideoBitrate;
       return _native_GCKUnitySelectCastDevice(deviceID, remoteDisplayConfigStruct);
     }

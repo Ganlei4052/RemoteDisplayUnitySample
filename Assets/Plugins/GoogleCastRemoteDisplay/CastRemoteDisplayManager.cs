@@ -1,4 +1,18 @@
-// Copyright 2015 Google Inc.
+/*
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 using Google.Cast.RemoteDisplay.Internal;
 using UnityEngine;
@@ -13,13 +27,13 @@ namespace Google.Cast.RemoteDisplay {
   public class CastRemoteDisplayManager : MonoBehaviour {
 
     /**
-     * Fired when the list of available cast devices has been updated. Call #GetCastDevices on the
+     * Fired when the list of available cast devices has been updated. Call GetCastDevices() on the
      * CastRemoteDisplayManager to get the actual list.
      */
     public CastRemoteDisplayEvent CastDevicesUpdatedEvent;
 
     /**
-     * Fired when the remote display session starts. Call #GetSelectedDevice on the
+     * Fired when the remote display session starts. Call GetSelectedDevice() on the
      * CastRemoteDisplayManager to get the name of the selected cast device.
      */
     public CastRemoteDisplayEvent RemoteDisplaySessionStartEvent;
@@ -29,10 +43,9 @@ namespace Google.Cast.RemoteDisplay {
      */
     public CastRemoteDisplayEvent RemoteDisplaySessionEndEvent;
 
-
     /**
      * Fired when the remote display session encounters an error. When this event is fired, the
-     * game object that owns this component will be disabled. Call #GetLastError to get information
+     * game object that owns this component will be disabled. Call GetLastError() to get information
      * about the error that was fired.
      */
     public CastRemoteDisplayEvent RemoteDisplayErrorEvent;
@@ -40,17 +53,15 @@ namespace Google.Cast.RemoteDisplay {
     /**
      * There should only be one DisplayManager in the scene at a time, this instance enforces that.
      */
-    private static CastRemoteDisplayManager instance = null;
     public static CastRemoteDisplayManager GetInstance() {
       return instance;
     }
+    private static CastRemoteDisplayManager instance = null;
 
     /**
-     * Used to render graphics on the remote display. Only used if #RemoteDisplayTexture is not
+     * Used to render graphics on the remote display. Only used if RemoteDisplayTexture is not
      * set.
      */
-    [SerializeField]
-    private Camera remoteDisplayCamera;
     public Camera RemoteDisplayCamera {
       get {
         return remoteDisplayCamera;
@@ -67,9 +78,13 @@ namespace Google.Cast.RemoteDisplay {
         }
       }
     }
-
     [SerializeField]
-    private Texture remoteDisplayTexture;
+    private Camera remoteDisplayCamera;
+
+    /**
+     * Used to render graphics on the remote display. If this is set, RemoteDisplayCamera will not
+     * be used.
+     */
     public Texture RemoteDisplayTexture {
       get {
         return remoteDisplayTexture;
@@ -86,13 +101,13 @@ namespace Google.Cast.RemoteDisplay {
         }
       }
     }
+    [SerializeField]
+    private Texture remoteDisplayTexture;
 
     /**
      * Used to render graphics on the remote display when the application is paused or
      * backgrounded.
      */
-    [SerializeField]
-    private Texture remoteDisplayPausedTexture;
     public Texture RemoteDisplayPausedTexture {
       get {
         return remoteDisplayPausedTexture;
@@ -101,12 +116,12 @@ namespace Google.Cast.RemoteDisplay {
         remoteDisplayPausedTexture = value;
       }
     }
+    [SerializeField]
+    private Texture remoteDisplayPausedTexture;
 
     /**
      * Used to play audio on the remote display.
      */
-    [SerializeField]
-    private AudioListener remoteAudioListener;
     public AudioListener RemoteAudioListener {
       get {
         return remoteAudioListener;
@@ -118,12 +133,12 @@ namespace Google.Cast.RemoteDisplay {
         remoteAudioListener = value;
       }
     }
+    [SerializeField]
+    private AudioListener remoteAudioListener;
 
     /**
      * The remote display application ID.
      */
-    [SerializeField]
-    private string castAppId = "";
     public string CastAppId {
       get {
         return castAppId;
@@ -132,13 +147,13 @@ namespace Google.Cast.RemoteDisplay {
         castAppId = value;
       }
     }
+    [SerializeField]
+    private string castAppId = "";
 
     /**
-     * The configuration to use to set up a remote display session when a cast
-     * device is selected. See #SelectCastDevice.
+     * The configuration used to set up a remote display session when a cast device is selected.
+     * See SelectCastDevice().
      */
-    [SerializeField]
-    private CastRemoteDisplayConfiguration configuration = new CastRemoteDisplayConfiguration();
     public CastRemoteDisplayConfiguration Configuration {
       get {
         return configuration;
@@ -150,6 +165,8 @@ namespace Google.Cast.RemoteDisplay {
         configuration = value;
       }
     }
+    [SerializeField]
+    private CastRemoteDisplayConfiguration configuration = new CastRemoteDisplayConfiguration();
 
     private CastRemoteDisplayExtensionManager extensionManager;
 
@@ -197,7 +214,7 @@ namespace Google.Cast.RemoteDisplay {
 
     /**
      * Returns whether there is an active cast session. This will be set to true from the moment
-     * the #RemoteDisplaySessionStartEvent fires and until the session ends.
+     * the RemoteDisplaySessionStartEvent() fires and until the session ends.
      */
     public bool IsCasting() {
       return extensionManager.IsCasting();
@@ -299,31 +316,34 @@ namespace Google.Cast.RemoteDisplay {
   };
 
   /**
-   * Frame rates supported by a remote display session.
+   * Frame rates expected by the remote display session from the game. The video
+   * encoder on the device and TV will expect the game to provide frames at this
+   * frame rate. If the game exceeds this frame rate, then it is possible for
+   * stutters and slowdowns to occur.
    */
   public enum CastRemoteDisplayFrameRate {
     /**
-     * Specifies 15 frames per second for the session.
+     * Specifies 15 frames per second coming from the game.
      */
     Fps15 = 15,
 
     /**
-     * Specifies 24 frames per second for the session.
+     * Specifies 24 frames per second coming from the game.
      */
     Fps24 = 24,
 
     /**
-     * Specifies 25 frames per second for the session.
+     * Specifies 25 frames per second coming from the game.
      */
     Fps25 = 25,
 
     /**
-     * Specifies 30 frames per second for the session.
+     * Specifies 30 frames per second coming from the game.
      */
     Fps30 = 30,
 
     /**
-     * Specifies 60 frames per second for the session.
+     * Specifies 60 frames per second coming from the game.
      */
     Fps60 = 60,
   };
@@ -349,36 +369,6 @@ namespace Google.Cast.RemoteDisplay {
   };
 
   /**
-   * Target delays supported by a remote display session. See #CastRemoteDisplayConfiguration for
-   * details about using target delay.
-   */
-  public enum CastRemoteDisplayTargetDelay {
-    /**
-     * Specifies the minimum target delay for the session. Remote display will have the least time
-     * to encode, transmit, retransmit, decode, and render on the TV.
-     */
-    Minimum = 25,
-
-    /**
-     * Specifies a low target delay for the session. Remote display will have less time to encode,
-     * transmit, retransmit, decode, and render on the TV.
-     */
-    Low = 50,
-
-    /**
-     * Specifies a normal target delay for the session. Remote display is optimized for this delay.
-     */
-    Normal = 100,
-
-    /**
-     * Specifies a high target delay for the session. Remote display will have more time to encode,
-     * transmit, retransmit, decode, and render on the TV. This is useful for smoother rendering on
-     * the TV at the cost of higher latency and more memory to buffer and encode.
-     */
-    High = 400
-  };
-
-  /**
    * Represents a cast device.
    */
   [System.Serializable]
@@ -387,35 +377,35 @@ namespace Google.Cast.RemoteDisplay {
      * The ID of the device. This value must be passed when selecting a cast device to start the
      * remote display session.
      */
-    [SerializeField]
-    private string deviceId;
     public string DeviceId {
       get {
         return deviceId;
       }
     }
+    [SerializeField]
+    private string deviceId;
 
     /**
      * Name of the device. This should be used when populating a list of devices in the UI.
      */
-    [SerializeField]
-    private string deviceName;
     public string DeviceName {
       get {
         return deviceName;
       }
     }
+    [SerializeField]
+    private string deviceName;
 
     /**
      * The current status of the device.
      */
-    [SerializeField]
-    private string status;
     public string Status {
       get {
         return status;
       }
     }
+    [SerializeField]
+    private string status;
 
     private CastDevice() {}
 
@@ -435,26 +425,30 @@ namespace Google.Cast.RemoteDisplay {
   [System.Serializable]
   public class CastError {
     /**
-     * The ID of the device. This value must be passed when selecting a cast device to start the
-     * remote display session.
+     * The error code.
      */
-    private CastErrorCode errorCode;
     public CastErrorCode ErrorCode {
       get {
         return errorCode;
       }
     }
+    [SerializeField]
+    private CastErrorCode errorCode;
 
     /**
-     * Name of the device. This should be used when populating a list of devices in the UI.
+     * Developer-readable error message.
      */
-    private string message;
     public string Message {
       get {
         return message;
       }
     }
+    [SerializeField]
+    private string message;
 
+    /**
+     * Returns user-readable error message title text.
+     */
     public string ReadableErrorTitle {
       get {
         switch (errorCode) {
@@ -470,6 +464,9 @@ namespace Google.Cast.RemoteDisplay {
       }
     }
 
+    /**
+     * Returns user-readable error message body text.
+     */
     public string ReadableErrorBody {
       get {
         switch (errorCode) {
@@ -509,40 +506,31 @@ namespace Google.Cast.RemoteDisplay {
      * camera texture resolution - using a custom render texture instead of a camera will not use
      * the resolution set here.
      */
-    [Tooltip("iOS fully supported. Changes camera resolution on Android and Unity simulator.")]
-    private CastRemoteDisplayResolution resolution;
     public CastRemoteDisplayResolution Resolution {
       get {
         return resolution;
       }
     }
+    [SerializeField]
+    [Tooltip("iOS fully supported. Changes camera resolution on Android and Unity simulator.")]
+    private CastRemoteDisplayResolution resolution;
 
     /**
-     * The target framerate to use for the remote display session. Slower devices and bandwidth
-     * conditions might slow down actual framerate on the TV.
+     * The frame rate expected by the remote display session from the game. The
+     * video encoder on the device and the TV will expect the game to provide
+     * frames at this rate. If the game exceeds this frame rate, then it is
+     * possible for stutters and slowdowns to occur. Slower devices and
+     * bandwidth conditions might slow down actual framerate on the TV.
      * This field is iOS-only. Ignored by Android and Unity simulator.
      */
-    [Tooltip("iOS-only. Ignored by Android and Unity simulator.")]
-    private CastRemoteDisplayFrameRate frameRate;
     public CastRemoteDisplayFrameRate FrameRate {
       get {
         return frameRate;
       }
     }
-
-    /**
-     * The target delay to use for the remote display session. Lower target delays might improve
-     * latency at the expense of visual and audio quality since there will be less time to encode,
-     * transmit, retransmit, decode, and render on the TV.
-     * This field is iOS-only. Ignored by Android and Unity simulator.
-     */
-    [Tooltip("iOS-only. Ignored by Android and Unity simulator.")]
-    private CastRemoteDisplayTargetDelay targetDelay;
-    public CastRemoteDisplayTargetDelay TargetDelay {
-      get {
-        return targetDelay;
-      }
-    }
+    [SerializeField]
+    [Tooltip("Expected frame rate from the game. See docs for details. iOS-only. Ignored by Android and Unity simulator.")]
+    private CastRemoteDisplayFrameRate frameRate;
 
     /**
      * Whether to disable adaptive video bitrate. If true, use a fixed bitrate set to
@@ -550,13 +538,14 @@ namespace Google.Cast.RemoteDisplay {
      * This is an experimental feature.
      * This field is iOS-only. Ignored by Android and Unity simulator.
      */
-    [Tooltip("Experimental and iOS-only. Ignored by Android and Unity simulator.")]
-    private bool disableAdaptiveVideoBitrate;
     public bool DisableAdaptiveVideoBitrate {
       get {
         return disableAdaptiveVideoBitrate;
       }
     }
+    [SerializeField]
+    [Tooltip("Experimental and iOS-only. Ignored by Android and Unity simulator.")]
+    private bool disableAdaptiveVideoBitrate;
 
     private static readonly Dictionary<CastRemoteDisplayResolution, Vector2> resolutionMap =
       new Dictionary<CastRemoteDisplayResolution, Vector2> {
@@ -566,7 +555,7 @@ namespace Google.Cast.RemoteDisplay {
       };
 
     /**
-     * Returns the current #resolution width and height as a 2-D vector.
+     * Returns the current resolution width and height as a 2-D vector.
      */
     public Vector2 ResolutionDimensions {
       get {
@@ -580,13 +569,12 @@ namespace Google.Cast.RemoteDisplay {
     public CastRemoteDisplayConfiguration() {
       frameRate = CastRemoteDisplayFrameRate.Fps60;
       resolution = CastRemoteDisplayResolution.Resolution720p;
-      targetDelay = CastRemoteDisplayTargetDelay.Normal;
       disableAdaptiveVideoBitrate = false;
     }
   }
 
   /**
-   * Used to allow the events we fire to be serializable in the inspector.
+   * Used to allow the events fired by CastRemoteDisplayManager to be serializable in the inspector.
    */
   [System.Serializable]
   public class CastRemoteDisplayEvent : UnityEvent<CastRemoteDisplayManager> { }
