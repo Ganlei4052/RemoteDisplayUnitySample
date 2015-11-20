@@ -62,6 +62,7 @@ namespace CompleteProject
     public void EndGame() {
       pauseButton.SetActive(false);
       joysticks.SetActive(false);
+      castUIController.SetActive(true);
       receiverCanvas.EndGame();
     }
 
