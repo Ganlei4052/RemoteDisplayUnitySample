@@ -226,7 +226,6 @@ namespace Google.Cast.RemoteDisplay.Internal {
       }
 
       if (texture == null) {
-        Debug.LogError("No texture or camera set. Can't cast to remote display.");
         return;
       }
       castRemoteDisplayExtension.SetRemoteDisplayTexture(texture);
@@ -342,6 +341,18 @@ namespace Google.Cast.RemoteDisplay.Internal {
       UpdateRemoteDisplayTexture();
       isCasting = true;
       onRemoteDisplaySessionStartCallback();
+      checkValidTexture();
+    }
+
+    /**
+     * Verifies that there is a texture or camera set
+     */
+    private void checkValidTexture() {
+      if (CastRemoteDisplayManager.RemoteDisplayCamera == null &&
+          CastRemoteDisplayManager.RemoteDisplayTexture == null) {
+        Debug.LogError("No texture or camera set. Can't cast to remote display.");
+        return;
+      }
     }
 
     /**
