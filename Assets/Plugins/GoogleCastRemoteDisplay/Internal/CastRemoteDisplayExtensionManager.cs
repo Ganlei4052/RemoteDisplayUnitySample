@@ -22,8 +22,11 @@ using System.Collections.Generic;
 namespace Google.Cast.RemoteDisplay.Internal {
   public class CastRemoteDisplayExtensionManager : MonoBehaviour {
 
+    private static float TIME_TO_DELAY_VOLUME_CHANGE = 0.25f;
+
     // We need this in order to tell the CastRemoteDisplayManager to fire events for us.
     public delegate void CastEventHandler();
+    public delegate void CastVolumeHandler(float newVolume);
 
     public CastRemoteDisplayManager CastRemoteDisplayManager {
       get {
@@ -35,12 +38,13 @@ namespace Google.Cast.RemoteDisplay.Internal {
     private CastEventHandler onRemoteDisplaySessionStartCallback;
     private CastEventHandler onRemoteDisplaySessionEndCallback;
     private CastEventHandler onErrorCallback;
+    private CastVolumeHandler onVolumeChangedCallback;
 
     private bool isApplicationPaused = false;
     private bool isCasting = false;
 
     private List<CastDevice> castDevices = new List<CastDevice>();
-    private CastDevice connectedCastDevice = null;
+    private CastDevice selectedCastDevice = null;
     private CastError lastError = null;
     private ICastRemoteDisplayExtension castRemoteDisplayExtension = null;
 
@@ -52,17 +56,23 @@ namespace Google.Cast.RemoteDisplay.Internal {
     // if possible.
     private bool remoteDisplayTextureUpdated = false;
 
+    // Defer the setting of the volume so the SDK isn't overloaded by set calls.  Tracks the most
+    // recent volume request.
+    private float volumeToSet = -1.0f;
+
     /**
      * Sets the event handlers that should be invoked by this class.
      */
     public void SetEventHandlers(CastEventHandler onCastDevicesUpdatedCallback,
         CastEventHandler onRemoteDisplaySessionStartCallback,
         CastEventHandler onRemoteDisplaySessionEndCallback,
-        CastEventHandler onErrorCallback) {
+        CastEventHandler onErrorCallback,
+        CastVolumeHandler onVolumeChangedCallback) {
       this.onCastDevicesUpdatedCallback = onCastDevicesUpdatedCallback;
       this.onRemoteDisplaySessionStartCallback = onRemoteDisplaySessionStartCallback;
       this.onRemoteDisplaySessionEndCallback = onRemoteDisplaySessionEndCallback;
       this.onErrorCallback = onErrorCallback;
+      this.onVolumeChangedCallback = onVolumeChangedCallback;
     }
 
     /**
@@ -145,7 +155,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
     private void CacheSelectedDevice(string deviceId) {
       foreach (CastDevice listDevice in castDevices) {
         if (listDevice.DeviceId == deviceId) {
-          connectedCastDevice = listDevice;
+          selectedCastDevice = listDevice;
           return;
         }
       }
@@ -155,8 +165,8 @@ namespace Google.Cast.RemoteDisplay.Internal {
      * Returns the CastDevice of the receiver device this sender is currently casting to.
      */
     public CastDevice GetSelectedCastDevice() {
-      if (connectedCastDevice != null) {
-        return connectedCastDevice;
+      if (selectedCastDevice != null) {
+        return selectedCastDevice;
       }
       return null;
     }
@@ -173,9 +183,6 @@ namespace Google.Cast.RemoteDisplay.Internal {
      * the user stop and disconnect and later select another Cast device.
      */
     public void StopRemoteDisplaySession() {
-      DiscardGeneratedTextureIfNeeded();
-      connectedCastDevice = null;
-      isCasting = false;
       if (castRemoteDisplayExtension != null) {
         castRemoteDisplayExtension.StopRemoteDisplaySession();
       }
@@ -316,10 +323,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
      */
     private void Deactivate() {
       Debug.Log("Deactivating Cast Remote Display.");
-      connectedCastDevice = null;
-      isCasting = false;
       StopRemoteDisplaySession();
-      DiscardGeneratedTextureIfNeeded();
 
       if (castRemoteDisplayExtension != null) {
         castRemoteDisplayExtension.Deactivate();
@@ -363,7 +367,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
         Debug.Log("Remote display session stopped.");
         castRemoteDisplayExtension.OnRemoteDisplaySessionStop();
       }
-      isCasting = false;
+      disconnect();
       onRemoteDisplaySessionEndCallback();
     }
 
@@ -377,14 +381,30 @@ namespace Google.Cast.RemoteDisplay.Internal {
     }
 
     /**
+     * Callback called from teh native plugins when the Cast device updates.  Volume is between
+     * 0.0 and 1.0.
+     */
+    public void _callback_OnVolumeUpdated(string volumeString) {
+      float newVolume = float.Parse(volumeString);
+
+      onVolumeChangedCallback(newVolume);
+    }
+
+    /**
      * Callback called from the native plugins when the SDK throws an error.
      */
     public void _callback_OnCastError(string rawErrorString) {
       string errorString = extractErrorString(rawErrorString);
       CastErrorCode errorCode = extractErrorCode(rawErrorString);
       lastError = new CastError(errorCode, errorString);
-      isCasting = false;
+      disconnect();
       onErrorCallback();
+    }
+
+    private void disconnect() {
+      DiscardGeneratedTextureIfNeeded();
+      selectedCastDevice = null;
+      isCasting = false;
     }
 
     /**
@@ -418,7 +438,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
     private void UpdateCastDevicesFromNativeCode() {
       castDevices.Clear();
       if (castRemoteDisplayExtension != null) {
-        castDevices = castRemoteDisplayExtension.GetCastDevices(ref this.connectedCastDevice);
+        castDevices = castRemoteDisplayExtension.GetCastDevices(ref this.selectedCastDevice);
       } else {
         Debug.Log("Can't update the list of cast devices because there is no extension object.");
       }
@@ -444,6 +464,40 @@ namespace Google.Cast.RemoteDisplay.Internal {
         castRemoteDisplayExtension.RenderFrame();
         remoteDisplayTextureUpdated = false;
       }
+    }
+
+    /**
+     * Gets the cast volume from the SDK.
+     */
+    public float GetCastVolume() {
+      return castRemoteDisplayExtension.GetCastVolume();
+    }
+
+    /**
+     * Sets the cast volume in the SDK.
+     */
+    public void SetCastVolume(float volume) {
+      if (volumeToSet <= -1.0f) {
+        StartCoroutine(SetVolumeDeferred());
+      }
+      volumeToSet = volume;
+    }
+
+    /**
+     * Throttles the rate of volume changes, so the receiver isn't overwhelmed with requests, while
+     * leaving volume changes responsive enough that they're close to real-time.
+     */
+    private IEnumerator SetVolumeDeferred() {
+      float start = Time.realtimeSinceStartup;
+      // Note: WaitForSeconds can't be used here, since timeScale affects it, and pausing the game
+      //  can stop such calls from returning.
+      while (Time.realtimeSinceStartup < start + TIME_TO_DELAY_VOLUME_CHANGE) {
+        yield return null;
+      }
+      if (volumeToSet > -1.0) {
+        castRemoteDisplayExtension.SetCastVolume(volumeToSet);
+      }
+      volumeToSet = -1.0f;
     }
 
 

@@ -1,5 +1,7 @@
 # Google Cast Remote Display Unity Plugin.
 
+(Do not ship this file in release builds)
+
 This contains the files for the Google Cast Remote Display Unity Plugin C#
 scripting API.
 

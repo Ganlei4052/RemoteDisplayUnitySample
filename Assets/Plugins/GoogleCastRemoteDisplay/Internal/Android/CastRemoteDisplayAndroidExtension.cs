@@ -158,6 +158,20 @@ namespace Google.Cast.RemoteDisplay.Internal {
         bridge.CallStatic(NATIVE_STOP_REMOTE_DISPLAY_SESSION);
       }
     }
+
+    public float GetCastVolume() {
+      if (bridge != null) {
+        return (float) bridge.CallStatic<double>("_native_getCastVolume");
+      } else {
+        return -1.0f;
+      }
+    }
+
+    public void SetCastVolume(float volume) {
+      if (bridge != null) {
+        bridge.CallStatic("_native_setCastVolume", volume);
+      }
+    }
   }
 }
 #endif
