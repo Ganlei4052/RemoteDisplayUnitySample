@@ -6828,6 +6828,10 @@ Prefab:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 11490798, guid: ecf7bd90037d3472baa247be7ccd7de2, type: 2}
+      propertyPath: castDevices.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 454822, guid: ecf7bd90037d3472baa247be7ccd7de2, type: 2}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -6863,6 +6867,18 @@ Prefab:
     - target: {fileID: 167120, guid: ecf7bd90037d3472baa247be7ccd7de2, type: 2}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11490798, guid: ecf7bd90037d3472baa247be7ccd7de2, type: 2}
+      propertyPath: castDevices.Array.data[0].deviceId
+      value: virtualDevice001
+      objectReference: {fileID: 0}
+    - target: {fileID: 11490798, guid: ecf7bd90037d3472baa247be7ccd7de2, type: 2}
+      propertyPath: castDevices.Array.data[0].deviceName
+      value: virtualDevice001
+      objectReference: {fileID: 0}
+    - target: {fileID: 11490798, guid: ecf7bd90037d3472baa247be7ccd7de2, type: 2}
+      propertyPath: castDevices.Array.data[0].status
+      value: Idle
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: ecf7bd90037d3472baa247be7ccd7de2, type: 2}
