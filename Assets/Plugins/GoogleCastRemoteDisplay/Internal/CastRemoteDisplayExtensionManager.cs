@@ -60,6 +60,10 @@ namespace Google.Cast.RemoteDisplay.Internal {
     // recent volume request.
     private float volumeToSet = -1.0f;
 
+    // Caches the current volume - used only to prevent setting the volume to whatever level it is
+    // currently at.
+    private float cachedVolume = -1.0f;
+
     /**
      * Sets the event handlers that should be invoked by this class.
      */
@@ -470,17 +474,21 @@ namespace Google.Cast.RemoteDisplay.Internal {
      * Gets the cast volume from the SDK.
      */
     public float GetCastVolume() {
-      return castRemoteDisplayExtension.GetCastVolume();
+      cachedVolume = castRemoteDisplayExtension.GetCastVolume();
+      return cachedVolume;
     }
 
     /**
      * Sets the cast volume in the SDK.
      */
     public void SetCastVolume(float volume) {
-      if (volumeToSet <= -1.0f) {
-        StartCoroutine(SetVolumeDeferred());
+      // Only change the volume if the current volume and the new volume are different.
+      if (!Mathf.Approximately(volume, cachedVolume)) {
+        if (volumeToSet <= -1.0f) {
+          StartCoroutine(SetVolumeDeferred());
+        }
+        volumeToSet = volume;
       }
-      volumeToSet = volume;
     }
 
     /**

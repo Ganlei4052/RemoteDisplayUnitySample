@@ -75,7 +75,7 @@ namespace Google.Cast.RemoteDisplay.UI {
     /**
      * Called when the volume slider is changed - passes volume changes along to the Cast device.
      */
-	public void OnVolumeSet() {
+    public void OnVolumeSet() {
         CastRemoteDisplayManager.GetInstance().SetCastVolume(volumeSlider.value);
     }
   }
