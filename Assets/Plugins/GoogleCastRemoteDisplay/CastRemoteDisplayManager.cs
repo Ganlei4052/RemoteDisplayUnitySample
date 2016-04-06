@@ -243,7 +243,7 @@ namespace Google.Cast.RemoteDisplay {
     }
 
     /**
-     * Returns the current volume on the Cast device, from 0.0 to 1.0, or -1.0f if an error has
+     * Returns the current volume on the Cast device, from 0.0 to 1.0, or -1.0 if an error has
      * occurred.
      */
     public float GetCastVolume() {
@@ -598,11 +598,15 @@ namespace Google.Cast.RemoteDisplay {
   }
 
   /**
-   * Used to allow the events fired by CastRemoteDisplayManager to be serializable in the inspector.
+   * Used to allow the events fired by CastRemoteDisplayManager to be serialized in the inspector.
    */
   [System.Serializable]
   public class CastRemoteDisplayEvent : UnityEvent<CastRemoteDisplayManager> { }
 
+  /**
+   * Used to allow the volume events fired by CastRemoteDisplayManager to be serialized in the
+   * inspector.
+   */
   [System.Serializable]
   public class CastRemoteDisplayVolumeEvent : UnityEvent<CastRemoteDisplayManager, float> { }
 }
