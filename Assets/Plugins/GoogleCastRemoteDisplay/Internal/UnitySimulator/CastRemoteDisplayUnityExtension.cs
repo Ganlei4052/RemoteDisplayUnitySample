@@ -27,6 +27,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
     private Texture remoteDisplayTexture;
     private Texture2D screenTexture;
     private Material material;
+    private float currentVolume = 1.0f;
 
     public CastRemoteDisplayUnityExtension(CastRemoteDisplayExtensionManager extensionManager,
         CastRemoteDisplaySimulator displaySimulator) {
@@ -100,6 +101,16 @@ namespace Google.Cast.RemoteDisplay.Internal {
 
     public void StopRemoteDisplaySession() {
       extensionManager._callback_OnRemoteDisplaySessionEnd("dummy");
+    }
+
+    public float GetCastVolume() {
+      return currentVolume;
+    }
+
+    public void SetCastVolume(float volume) {
+      currentVolume = Mathf.Clamp(volume, 0.0f, 1.0f);
+
+      extensionManager._callback_OnVolumeUpdated(currentVolume.ToString());
     }
   }
 }

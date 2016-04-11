@@ -114,6 +114,14 @@ namespace Google.Cast.RemoteDisplay.Internal {
     public void StopRemoteDisplaySession() {
       CastRemoteDisplayiOSUnityBridge.StopRemoteDisplaySession();
     }
+
+    public float GetCastVolume() {
+      return CastRemoteDisplayiOSUnityBridge.GetCastVolume();
+    }
+
+    public void SetCastVolume(float volume) {
+      CastRemoteDisplayiOSUnityBridge.SetCastVolume(volume);
+    }
   }
 }
 

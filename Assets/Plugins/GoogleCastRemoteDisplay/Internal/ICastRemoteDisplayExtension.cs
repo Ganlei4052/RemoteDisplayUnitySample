@@ -42,5 +42,9 @@ namespace Google.Cast.RemoteDisplay.Internal {
     void SetRemoteDisplayTexture(Texture texture);
 
     void StopRemoteDisplaySession();
+
+    float GetCastVolume();
+
+    void SetCastVolume(float volume);
   }
 }

@@ -94,6 +94,12 @@ namespace Google.Cast.RemoteDisplay.Internal {
     [DllImport ("__Internal")]
     private static extern void _native_GCKUnityTeardownRemoteDisplay();
 
+    [DllImport ("__Internal")]
+    private static extern float _native_GCKUnityGetCastVolume();
+
+    [DllImport ("__Internal")]
+    private static extern void _native_GCKUnitySetCastVolume(float volume);
+
     /**
      * Initiates scan for devices that support given application ID. The native
      * library will send the "_callback_OnCastDevicesUpdated" message when the list of available
@@ -190,6 +196,20 @@ namespace Google.Cast.RemoteDisplay.Internal {
      */
     public static void TeardownRemoteDisplay() {
       _native_GCKUnityTeardownRemoteDisplay();
+    }
+
+    /**
+     * Returns the volume from the Cast device, on a scale from 0.0 to 1.0.
+     */
+    public static float GetCastVolume() {
+      return _native_GCKUnityGetCastVolume();
+    }
+
+    /**
+     * Sets the volume on the Cast device, on a scale from 0.0 to 1.0.
+     */
+    public static void SetCastVolume(float volume) {
+      _native_GCKUnitySetCastVolume(volume);
     }
 
     /**

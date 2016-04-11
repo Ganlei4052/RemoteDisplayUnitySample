@@ -39,6 +39,7 @@ namespace Google.Cast.RemoteDisplay.Internal {
     private static string NATIVE_GET_CAST_DEVICES = "_native_getCastDevices";
     private static string NATIVE_SELECT_CAST_DEVICE = "_native_selectCastDevice";
     private static string NATIVE_STOP_REMOTE_DISPLAY_SESSION = "_native_stopRemoteDisplaySession";
+    private static string NATIVE_SET_PLUGIN_CONFIGURATION = "_native_setPluginConfiguration";
 
     // Max number of JNI calls for a single call to #GetCastDevices.
     private static int MAX_NUMBER_OF_JNI_CALLS_FOR_CAST_DEVICES = 10;
@@ -59,6 +60,12 @@ namespace Google.Cast.RemoteDisplay.Internal {
         // object that should get callbacks from the Android side.
         bridge.CallStatic(NATIVE_START_SCAN, extensionManager.CastRemoteDisplayManager.CastAppId,
             extensionManager.name);
+
+        bridge.CallStatic(NATIVE_SET_PLUGIN_CONFIGURATION,
+            (float) extensionManager.CastRemoteDisplayManager.Configuration.ResolutionDimensions.x,
+            (float) extensionManager.CastRemoteDisplayManager.Configuration.ResolutionDimensions.y,
+            (float) GetRenderBackendEnumValue(),
+            (float) GetRenderTargetEnumValue());
       } else {
         Debug.LogError("Couldn't initialize the Android Remote Display native library. " +
             "Couldn't not find class " + ANDROID_BRIDGE_CLASS_NAME);
@@ -157,6 +164,46 @@ namespace Google.Cast.RemoteDisplay.Internal {
       if (bridge != null) {
         bridge.CallStatic(NATIVE_STOP_REMOTE_DISPLAY_SESSION);
       }
+    }
+
+    public float GetCastVolume() {
+      if (bridge != null) {
+        return (float) bridge.CallStatic<double>("_native_getCastVolume");
+      } else {
+        return -1.0f;
+      }
+    }
+
+    public void SetCastVolume(float volume) {
+      if (bridge != null) {
+        bridge.CallStatic("_native_setCastVolume", volume);
+      }
+    }
+
+    private int GetRenderBackendEnumValue() {
+      switch(SystemInfo.graphicsDeviceType) {
+        case UnityEngine.Rendering.GraphicsDeviceType.OpenGLES2:
+          return 1;
+        case UnityEngine.Rendering.GraphicsDeviceType.OpenGLES3:
+          return 2;
+      }
+      return 0; // Will map to UNKNOWN.
+    }
+
+    private int GetRenderTargetEnumValue() {
+      // Check for a remote display texture set first since that takes precedence when selecting
+      // the render target.
+      if (extensionManager.CastRemoteDisplayManager.RemoteDisplayTexture != null) {
+        return 3;
+      }
+      if (extensionManager.CastRemoteDisplayManager.RemoteDisplayCamera != null) {
+        if (extensionManager.CastRemoteDisplayManager.RemoteDisplayCamera.targetTexture == null) {
+          return 1;
+        } else {
+          return 2;
+        }
+      }
+      return 0; // Will map to UNKNOWN.
     }
   }
 }

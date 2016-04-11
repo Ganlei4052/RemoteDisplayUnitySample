@@ -24,7 +24,8 @@ using UnityEditor.iOS.Xcode;
 using UnityEngine.Rendering;
 
 /**
- * Disable metal for the remote display sample - it is currently unsupported.
+ * Disable metal for the remote display sample.  Metal is not supported due to shaders used in the
+ * source Unity sample.
  */
 public class DisableMetal : MonoBehaviour {
   [PostProcessSceneAttribute(1)]

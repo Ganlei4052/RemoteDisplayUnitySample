@@ -269,7 +269,7 @@ namespace Google.Cast.RemoteDisplay.UI {
       if (isCasting) {
         CastDevice selectedDevice = CastRemoteDisplayManager.GetInstance().GetSelectedCastDevice();
         if (selectedDevice != null) {
-          castDisconnectDialog.SetDeviceName(selectedDevice.DeviceName);
+          castDisconnectDialog.Setup(selectedDevice.DeviceName);
         }
         castDisconnectDialog.gameObject.SetActive(true);
       } else {

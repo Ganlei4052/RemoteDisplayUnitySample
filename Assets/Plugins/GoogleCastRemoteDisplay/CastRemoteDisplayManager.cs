@@ -33,6 +33,12 @@ namespace Google.Cast.RemoteDisplay {
     public CastRemoteDisplayEvent CastDevicesUpdatedEvent;
 
     /**
+     * Fired when the cast device's volume has been updated. Takes two parameters, the
+     * CastRemoteDisplayManager, and the  new volume, from 0.0 to 1.0.
+     */
+    public CastRemoteDisplayVolumeEvent CastVolumeUpdatedEvent;
+
+    /**
      * Fired when the remote display session starts. Call GetSelectedDevice() on the
      * CastRemoteDisplayManager to get the name of the selected cast device.
      */
@@ -188,7 +194,7 @@ namespace Google.Cast.RemoteDisplay {
       extensionManager.UpdateAudioListener(null, remoteAudioListener);
       extensionManager.SetEventHandlers(fireCastDevicesUpdatedEvent,
           fireRemoteDisplaySessionStartEvent, fireRemoteDisplaySessionEndEvent,
-          fireErrorEvent);
+          fireErrorEvent, fireVolumeChangedEvent);
     }
 
     /**
@@ -237,11 +243,35 @@ namespace Google.Cast.RemoteDisplay {
     }
 
     /**
+     * Returns the current volume on the Cast device, from 0.0 to 1.0, or -1.0 if an error has
+     * occurred.
+     */
+    public float GetCastVolume() {
+      return extensionManager.GetCastVolume();
+    }
+
+    /**
+     * Sets the current volume on the Cast device, from 0.0 to 1.0.
+     */
+    public void SetCastVolume(float volume) {
+      extensionManager.SetCastVolume(volume);
+    }
+
+    /**
      * Used to allow internal classes to fire events published by this class.
      */
     private void fireCastDevicesUpdatedEvent() {
       if (CastDevicesUpdatedEvent != null) {
         CastDevicesUpdatedEvent.Invoke(this);
+      }
+    }
+
+    /**
+     * Used to allow internal classes to fire events published by this class.
+     */
+    private void fireVolumeChangedEvent(float newVolume) {
+      if (CastVolumeUpdatedEvent != null) {
+        CastVolumeUpdatedEvent.Invoke(this, newVolume);
       }
     }
 
@@ -352,11 +382,6 @@ namespace Google.Cast.RemoteDisplay {
    * TV resolutions supported by a remote display session.
    */
   public enum CastRemoteDisplayResolution {
-    /**
-     * Specifies 848x480 for the session.
-     */
-    Resolution480p = 480,
-
     /**
      * Specifies 1280x720 for the session.
      */
@@ -549,7 +574,6 @@ namespace Google.Cast.RemoteDisplay {
 
     private static readonly Dictionary<CastRemoteDisplayResolution, Vector2> resolutionMap =
       new Dictionary<CastRemoteDisplayResolution, Vector2> {
-      { CastRemoteDisplayResolution.Resolution480p, new Vector2(848, 480) },
       { CastRemoteDisplayResolution.Resolution720p, new Vector2(1280, 720) },
       { CastRemoteDisplayResolution.Resolution1080p, new Vector2(1920, 1080) }
       };
@@ -574,8 +598,15 @@ namespace Google.Cast.RemoteDisplay {
   }
 
   /**
-   * Used to allow the events fired by CastRemoteDisplayManager to be serializable in the inspector.
+   * Used to allow the events fired by CastRemoteDisplayManager to be serialized in the inspector.
    */
   [System.Serializable]
   public class CastRemoteDisplayEvent : UnityEvent<CastRemoteDisplayManager> { }
+
+  /**
+   * Used to allow the volume events fired by CastRemoteDisplayManager to be serialized in the
+   * inspector.
+   */
+  [System.Serializable]
+  public class CastRemoteDisplayVolumeEvent : UnityEvent<CastRemoteDisplayManager, float> { }
 }

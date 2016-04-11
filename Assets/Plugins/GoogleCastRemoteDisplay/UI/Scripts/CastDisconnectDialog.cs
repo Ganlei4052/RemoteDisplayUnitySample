@@ -34,6 +34,11 @@ namespace Google.Cast.RemoteDisplay.UI {
     public Text deviceName;
 
     /**
+     * The slider to control the cast device volume.
+     */
+    public Slider volumeSlider;
+
+    /**
      * The callback for disconnecting and closing the dialog.
      */
     public UICallback disconnectButtonTappedCallback;
@@ -46,8 +51,9 @@ namespace Google.Cast.RemoteDisplay.UI {
     /**
      * Set the cast device name for the dialog title.
      */
-    public void SetDeviceName(string name) {
+    public void Setup(string name) {
       deviceName.text = name;
+      volumeSlider.value = CastRemoteDisplayManager.GetInstance().GetCastVolume();
     }
 
     /**
@@ -64,6 +70,13 @@ namespace Google.Cast.RemoteDisplay.UI {
      */
     public void OnCloseButtonTapped() {
       closeButtonTappedCallback();
+    }
+
+    /**
+     * Called when the volume slider is changed - passes volume changes along to the Cast device.
+     */
+    public void OnVolumeSet() {
+        CastRemoteDisplayManager.GetInstance().SetCastVolume(volumeSlider.value);
     }
   }
 }
